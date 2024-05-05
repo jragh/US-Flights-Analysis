@@ -1,0 +1,5 @@
+## Create a tesing file for me to ignore
+testFile.txt
+
+## Never version control the database ##
+*.db
