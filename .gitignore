@@ -3,3 +3,6 @@ testFile.txt
 
 ## Never version control the database ##
 *.db
+
+## Never include any log files
+*.log
