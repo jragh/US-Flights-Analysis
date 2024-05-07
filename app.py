@@ -2,6 +2,8 @@ import polars as pl
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly_express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 import dash
 
@@ -11,17 +13,13 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 
 passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Monthly']
 
-analytics_df = pl.read_database_uri(query='SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 ORDER BY ROUND(CAST([PASSENGERS] as FLOAT), 2) desc', uri=sqlite_path,engine='adbc')
+analytics_df = pl.read_database_uri(query="SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 where CAST([PASSENGERS] as FLOAT) > 0 and CAST(SEATS as FLOAT) > 0 and CAST([DEPARTURES_PERFORMED] as FLOAT) > 0 ORDER BY [UNIQUE_CARRIER_NAME], ROUND(CAST([PASSENGERS] as FLOAT), 2) desc", uri=sqlite_path,engine='adbc')
 
 print(analytics_df.head(25))
 
 
 ## TODO: Idea for Carrier sorted list: Group by, then sort by Number of Passengers Flown descending, then select single column, to dicts, etc; 
 carrier_filter_list = sorted([val['UNIQUE_CARRIER_NAME'] for val in analytics_df.select(['UNIQUE_CARRIER_NAME']).unique().to_dicts()])
-
-print(carrier_filter_list)
-
-print(type(carrier_filter_list))
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css])
 
@@ -31,7 +29,7 @@ app.layout = dbc.Container([
 
         dbc.Col(children =[
             html.H1('Hello World')
-        ], id='sidebar', width = 12, lg = 4, md = 6, xl = 4, xxl = 4, sm = 12, align="center"),
+        ], id='sidebar', width = 12, lg = 4, md =12, xl = 4, xxl = 4, sm = 12, align="center"),
 
         dbc.Col(children=[
 
@@ -95,7 +93,7 @@ app.layout = dbc.Container([
             
             
 
-        ], id='graph_section', width = 12, lg = 8, md = 6, xl = 4, xxl = 8, sm=12, class_name='px-2')
+        ], id='graph_section', width = 12, lg = 8, md = 12, xl = 8, xxl = 8, sm=12, class_name='px-2')
 
     ])
 ])
@@ -146,7 +144,65 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             return bar_figure, [f'{selected_carrier}: Number of Passengers Transported']
 
-    ## Second Return is for showing seat usage utilization ##   
+    ## Second Return is for showing seat usage utilization ## 
+    elif selected_pass_viz == 'Passenger Utilization By Carrier (%)':
+
+        if selected_carrier is None or selected_carrier.strip() == '':
+
+            pass_util_carrier = pl.read_database_uri(query='select * from T100_PASSENGER_UTILIZATION_TOTAL_2023', uri=sqlite_path,engine='adbc')
+
+            bar_figure = px.bar(pass_util_carrier.select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(),
+                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title='Passenger Seat Utilization Pct (Pct Passengers vs Seats): All Carriers',
+                                barmode='group', text_auto='.3s')
+            
+            bar_figure.update_traces(textposition='outside', textangle=0)
+
+            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
+
+            bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            bar_figure.update_layout(plot_bgcolor='white')
+
+            ## Adding in Horizontal Legend
+            bar_figure.update_layout(legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32))
+
+            return bar_figure, ['All Carriers: Passenger Util. (%)']
+        
+        else:
+
+            pass_util_carrier = pl.read_database_uri(query='select a.* from T100_PASSENGER_UTILIZATION_BY_CARRIER_2023 a left join [MONTHS_LOOKUP] b on a.[MONTH] = b.[MONTH_NAME_SHORT] order by CAST(b.[MONTH] as int) asc', uri=sqlite_path,engine='adbc')
+
+            bar_figure = px.bar(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']),
+                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title=f'Passenger Seat Utilization Pct (Pct Passengers vs Seats): {selected_carrier}',
+                                barmode='group', text_auto='.3s')
+            
+
+            
+            bar_figure.update_traces(textposition='outside', textangle=0)
+
+            bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            ## Adding in Horizontal Legend
+            bar_figure.update_layout(plot_bgcolor='white', legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified")
+
+            ## Add in Line Figure
+            line_figure = px.line(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'PASSENGER UTILIZATION PCT']),
+                                  x='MONTH', y='PASSENGER UTILIZATION PCT', category_orders={'MONTH': months_text})
+            
+            line_figure.update_xaxes(type='category')
+
+            line_figure.update_traces(yaxis ="y2")
+
+            bar_figure.add_traces(line_figure.data).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "tozero", "tickformat":'.1%'},
+                                                                  yaxis1={"rangemode": "normal"})
+
+            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')         
+
+            return bar_figure, [f'{selected_carrier}: Passenger Seat Utilization Pct']
+
+
+
+
     
 
 
