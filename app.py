@@ -149,22 +149,40 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
-            pass_util_carrier = pl.read_database_uri(query='select * from T100_PASSENGER_UTILIZATION_TOTAL_2023', uri=sqlite_path,engine='adbc')
+            pass_util_carrier = pl.read_database_uri(query='select a.* from T100_PASSENGER_UTILIZATION_TOTAL_2023 a left join [MONTHS_LOOKUP] b on a.[MONTH] = b.[MONTH_NAME_SHORT] order by CAST(b.[MONTH] as int) asc', uri=sqlite_path,engine='adbc')
 
             bar_figure = px.bar(pass_util_carrier.select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(),
-                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title='Passenger Seat Utilization Pct (Pct Passengers vs Seats): All Carriers',
+                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title='Passenger Seat Utilization: All Carriers',
                                 barmode='group', text_auto='.3s')
             
             bar_figure.update_traces(textposition='outside', textangle=0)
 
-            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
-
             bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            ## Add in Line Figure
+            line_figure = px.line(pass_util_carrier.select(['MONTH', 'PASSENGER UTILIZATION PCT']), x='MONTH', y='PASSENGER UTILIZATION PCT',
+                                  category_orders={'MONTH': months_text}, markers=True)
+
+            line_figure.update_xaxes(type='category')
+
+            line_figure.update_traces(yaxis ="y2", line_color="rgba(255, 183, 3, 0.6)", name='PASSENGER UTILIZATION PCT', showlegend=True)
+
+            bar_figure.add_traces(list(line_figure.select_traces())).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "tozero", "tickformat":'.1%', "title": "Seats / Passengers (%)"},
+                                                                  yaxis1={"rangemode": "normal", "title" : "Total Seats or Passengers"})
+
+            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
 
             bar_figure.update_layout(plot_bgcolor='white')
 
             ## Adding in Horizontal Legend
-            bar_figure.update_layout(legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32))
+            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None)
+
+            ## Set Bar Colors ##
+            bar_figure.update_traces(marker_color="#023E8A", selector={"name": "TOTAL SEATS"}, marker={"cornerradius":4})
+
+            bar_figure.update_traces(marker_color="#A2D2FF", selector={"name": "TOTAL PASSENGERS"}, marker={"cornerradius":4})
+
+            bar_figure.update_traces(hovertemplate="%{y}")
 
             return bar_figure, ['All Carriers: Passenger Util. (%)']
         
@@ -173,7 +191,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             pass_util_carrier = pl.read_database_uri(query='select a.* from T100_PASSENGER_UTILIZATION_BY_CARRIER_2023 a left join [MONTHS_LOOKUP] b on a.[MONTH] = b.[MONTH_NAME_SHORT] order by CAST(b.[MONTH] as int) asc', uri=sqlite_path,engine='adbc')
 
             bar_figure = px.bar(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']),
-                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title=f'Passenger Seat Utilization Pct (Pct Passengers vs Seats): {selected_carrier}',
+                                x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title=f'Passenger Seat Utilization Pct: {selected_carrier}',
                                 barmode='group', text_auto='.3s')
             
 
@@ -182,21 +200,29 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
 
-            ## Adding in Horizontal Legend
-            bar_figure.update_layout(plot_bgcolor='white', legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified")
-
             ## Add in Line Figure
             line_figure = px.line(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'PASSENGER UTILIZATION PCT']),
-                                  x='MONTH', y='PASSENGER UTILIZATION PCT', category_orders={'MONTH': months_text})
+                                  x='MONTH', y='PASSENGER UTILIZATION PCT', category_orders={'MONTH': months_text}, markers=True)
             
             line_figure.update_xaxes(type='category')
 
-            line_figure.update_traces(yaxis ="y2")
+            line_figure.update_traces(yaxis ="y2", line_color="rgba(255, 183, 3, 0.6)", name='PASSENGER UTILIZATION PCT', showlegend=True)
 
-            bar_figure.add_traces(line_figure.data).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "tozero", "tickformat":'.1%'},
-                                                                  yaxis1={"rangemode": "normal"})
+            bar_figure.add_traces(list(line_figure.select_traces())).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "tozero", "tickformat":'.1%', "title": "Seats / Passengers (%)"},
+                                                                  yaxis1={"rangemode": "normal", "title" : "Total Seats or Passengers"})
 
-            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')         
+            bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
+
+            ## Adding in Horizontal Legend
+            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None)
+
+            ## Set Bar Colors ##
+            bar_figure.update_traces(marker_color="#023E8A", selector={"name": "TOTAL SEATS"}, marker={"cornerradius":4})
+
+            bar_figure.update_traces(marker_color="#A2D2FF", selector={"name": "TOTAL PASSENGERS"}, marker={"cornerradius":4})
+
+            bar_figure.update_traces(hovertemplate="%{y}")
+
 
             return bar_figure, [f'{selected_carrier}: Passenger Seat Utilization Pct']
 
