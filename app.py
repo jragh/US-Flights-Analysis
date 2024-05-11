@@ -7,11 +7,13 @@ from plotly.subplots import make_subplots
 
 import dash
 
+import flask
+
 sqlite_path = 'sqlite://US_Flights_Analytics.db'
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 
-passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Monthly']
+passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details']
 
 analytics_df = pl.read_database_uri(query="SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 where CAST([PASSENGERS] as FLOAT) > 0 and CAST(SEATS as FLOAT) > 0 and CAST([DEPARTURES_PERFORMED] as FLOAT) > 0 ORDER BY [UNIQUE_CARRIER_NAME], ROUND(CAST([PASSENGERS] as FLOAT), 2) desc", uri=sqlite_path,engine='adbc')
 
@@ -21,7 +23,13 @@ print(analytics_df.head(25))
 ## TODO: Idea for Carrier sorted list: Group by, then sort by Number of Passengers Flown descending, then select single column, to dicts, etc; 
 carrier_filter_list = sorted([val['UNIQUE_CARRIER_NAME'] for val in analytics_df.select(['UNIQUE_CARRIER_NAME']).unique().to_dicts()])
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css])
+server = flask.Flask(__name__)
+
+@server.route("/")
+def home():
+    return "Hello, Flask!"
+
+app = dash.Dash(external_stylesheets=[dbc.themes.ZEPHYR, dbc_css], server = server)
 
 
 app.layout = dbc.Container([
@@ -81,7 +89,7 @@ app.layout = dbc.Container([
                 html.Div([
                     html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
                     html.Hr(className='my-2'),
-                    html.P('Provivides the total number of passengers transported on flights throughout the entire year for the given carrier. (All Carriers shown if none provided)', className='mb-2'),
+                    html.P('', className='mb-2', id='passenger-graph-desc'),
 
                     dcc.Graph(id='passengers-graph')
                 ], className='p-4 bg-light text-dark border rounded-3')
@@ -101,6 +109,7 @@ app.layout = dbc.Container([
 @app.callback(
     Output(component_id='passengers-graph', component_property='figure'),
     Output(component_id='graph-header', component_property='children'),
+    Output(component_id='passenger-graph-desc', component_property='children'),
     [Input(component_id='carrier-selection', component_property='value'),
      Input(component_id='passenger-viz-selection', component_property='value')
     ]
@@ -111,14 +120,17 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
     ## First Return is Passengers By Carrier ##
     if selected_pass_viz == 'Passengers By Carrier':
+
+        pass_graph_desc = 'Provides the total number of passengers transported on flights throughout the entire year for the given carrier. (All Carriers shown if none provided)'
         
         pass_carrier = pl.read_database_uri(query='SELECT * FROM T100_PASSENGERS_BY_CARRIER_2023', uri=sqlite_path,engine='adbc')
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
-            bar_figure = px.bar(pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(), x='MONTH', y='TOTAL PASSENGERS', text_auto='.2s', title='Passengers Transported By Month: All Carriers')
+            bar_figure = px.bar(pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(), x='MONTH', y='TOTAL PASSENGERS',
+                                text_auto='.2s', title='Passengers Transported By Month: All Carriers')
 
-            bar_figure.update_traces(textposition='outside', textangle=0)
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#023E8A", marker={"cornerradius":4})
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
 
@@ -126,13 +138,14 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_layout(plot_bgcolor='white')
 
-            return bar_figure, ['All Carriers: Number of Passengers Transported']
+            return bar_figure, ['All Carriers: Number of Passengers Transported'], pass_graph_desc
         
         else:
 
-            bar_figure = px.bar(pass_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier), x='MONTH', y='TOTAL PASSENGERS', text_auto='.2s', title=f'Passengers Transported By Month: {selected_carrier}')
+            bar_figure = px.bar(pass_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier), x='MONTH', y='TOTAL PASSENGERS',
+                                text_auto='.2s', title=f'Passengers Transported By Month: {selected_carrier}')
 
-            bar_figure.update_traces(textposition='outside', textangle=0)
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#023E8A", marker={"cornerradius":4})
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
             
@@ -142,10 +155,12 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             
 
 
-            return bar_figure, [f'{selected_carrier}: Number of Passengers Transported']
+            return bar_figure, [f'{selected_carrier}: Number of Passengers Transported'], pass_graph_desc
 
     ## Second Return is for showing seat usage utilization ## 
     elif selected_pass_viz == 'Passenger Utilization By Carrier (%)':
+
+        pass_graph_desc = 'Provides the percentage of seats used by passnegers (Passengers Divided By Seats) for the given carrier throughout the year. (All Carriers shown if none provided)'
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
@@ -184,7 +199,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_traces(hovertemplate="%{y}")
 
-            return bar_figure, ['All Carriers: Passenger Util. (%)']
+            return bar_figure, ['All Carriers: Passenger Util. (%)'], pass_graph_desc
         
         else:
 
@@ -224,11 +239,31 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure.update_traces(hovertemplate="%{y}")
 
 
-            return bar_figure, [f'{selected_carrier}: Passenger Seat Utilization Pct']
+            return bar_figure, [f'{selected_carrier}: Passenger Seat Utilization Pct'], pass_graph_desc
+        
+    
+    ## Return Dash AG Grid for Summary Table on Passenger Utilization ##
+    elif selected_pass_viz == 'Passenger Utilization Details':
+
+        pass_graph_desc = 'Provides a summary table of Unique Routes, Passengers, Seats & Passenger Utilization Rate through the year for each carrier (Table is filterable)'
+
+        return dash.no_update, ['Passenger Utilization Details'], pass_graph_desc
 
 
 
+@app.callback(
+    Output(component_id='carrier-selection', component_property='disabled'),
+    Output(component_id='carrier-selection', component_property='value'),
+    [Input(component_id='passenger-viz-selection', component_property='value')],
+    State(component_id='carrier-selection', component_property='value')
+)
+def pass_details_disable_carrier(selected_pass_viz, carrier_state):
 
+    if selected_pass_viz == 'Passenger Utilization Details':
+
+        return True, None
+    
+    return False, carrier_state
     
 
 
