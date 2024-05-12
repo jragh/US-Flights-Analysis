@@ -34,6 +34,11 @@ app = dash.Dash(external_stylesheets=[dbc.themes.ZEPHYR, dbc_css], server = serv
 
 app.layout = dbc.Container([
     dbc.Row([
+        dbc.Col([
+            dbc.Navbar()
+        ], width=12)
+    ]),
+    dbc.Row([
 
         dbc.Col(children =[
             html.H1('Hello World')
