@@ -24,7 +24,7 @@ pass_summ_table_query = """SELECT UNIQUE_CARRIER_NAME as [UNIQUE CARRIER NAME],
 
 pass_summ_table = pl.read_database_uri(query=pass_summ_table_query, uri=sqlite_path,engine='adbc')
 
-column_definition = [{'field': i} for i in list(pass_summ_table.columns)]
+column_definition = [{'field': i, 'cellStyle': {'fontSize': '11px'}} for i in list(pass_summ_table.columns)]
 
 summary = dag.AgGrid(
     id='passenger_utilization_summary_grid',
@@ -35,7 +35,13 @@ summary = dag.AgGrid(
                 "cellStyle": {"wordBreak": "normal"},
                 "wrapText": True,
                 "autoHeight": True,
-    }
+                "wrapHeaderText": True,
+                "autoHeaderHeight": True,
+                "initialWidth": 50
+    },
+    columnSize='responsiveSizeToFit',
+    columnSizeOptions={"skipHeader" : False},
+    className='ag-theme-custom'
 )
 
 

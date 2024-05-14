@@ -4,10 +4,13 @@ import dash_bootstrap_components as dbc
 import plotly_express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import dash_ag_grid as dag
 
 import dash
 
 import flask
+
+from Passenger_Utilization_Summary import summary
 
 sqlite_path = 'sqlite://US_Flights_Analytics.db'
 
@@ -97,7 +100,7 @@ app.layout = dbc.Container([
                     html.P('', className='mb-2', id='passenger-graph-desc'),
 
                     dcc.Graph(id='passengers-graph')
-                ], className='p-4 bg-light text-dark border rounded-3')
+                ], className='p-4 bg-light text-dark border rounded-3', id='pass_visual_div')
 
 
                 
@@ -112,9 +115,7 @@ app.layout = dbc.Container([
 ])
 
 @app.callback(
-    Output(component_id='passengers-graph', component_property='figure'),
-    Output(component_id='graph-header', component_property='children'),
-    Output(component_id='passenger-graph-desc', component_property='children'),
+    Output(component_id='pass_visual_div', component_property='children'),
     [Input(component_id='carrier-selection', component_property='value'),
      Input(component_id='passenger-viz-selection', component_property='value')
     ]
@@ -143,7 +144,14 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_layout(plot_bgcolor='white')
 
-            return bar_figure, ['All Carriers: Number of Passengers Transported'], pass_graph_desc
+            return_children = [
+                html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
+                html.Hr(className='my-2'),
+                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                dcc.Graph(figure=bar_figure, id='passengers-graph')
+            ]
+
+            return return_children
         
         else:
 
@@ -157,10 +165,17 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
 
             bar_figure.update_layout(plot_bgcolor='white')
+
+            return_children = [
+                html.H2(f'{selected_carrier}: Number of Passengers Transported', id='graph-header'),
+                html.Hr(className='my-2'),
+                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                dcc.Graph(figure=bar_figure, id='passengers-graph')
+            ]
             
 
-
-            return bar_figure, [f'{selected_carrier}: Number of Passengers Transported'], pass_graph_desc
+            return return_children
+        
 
     ## Second Return is for showing seat usage utilization ## 
     elif selected_pass_viz == 'Passenger Utilization By Carrier (%)':
@@ -204,7 +219,14 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_traces(hovertemplate="%{y}")
 
-            return bar_figure, ['All Carriers: Passenger Util. (%)'], pass_graph_desc
+            return_children = [
+                html.H2('All Carriers: Passenger Util. (%)', id='graph-header'),
+                html.Hr(className='my-2'),
+                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                dcc.Graph(figure=bar_figure, id='passengers-graph')
+            ]
+
+            return return_children
         
         else:
 
@@ -243,8 +265,14 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_traces(hovertemplate="%{y}")
 
+            return_children = [
+                html.H2(f'{selected_carrier}: Passenger Seat Utilization Pct', id='graph-header'),
+                html.Hr(className='my-2'),
+                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                dcc.Graph(figure=bar_figure, id='passengers-graph')
+            ]
 
-            return bar_figure, [f'{selected_carrier}: Passenger Seat Utilization Pct'], pass_graph_desc
+            return return_children
         
     
     ## Return Dash AG Grid for Summary Table on Passenger Utilization ##
@@ -252,7 +280,16 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         pass_graph_desc = 'Provides a summary table of Unique Routes, Passengers, Seats & Passenger Utilization Rate through the year for each carrier (Table is filterable)'
 
-        return dash.no_update, ['Passenger Utilization Details'], pass_graph_desc
+        dag_table = summary
+
+        return_children = [
+                html.H2('Passenger Utilization Details', id='graph-header'),
+                html.Hr(className='my-2'),
+                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                dag_table
+        ]
+
+        return return_children
 
 
 
