@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM%20Plex%20Sans:wght@400;700&display=swap');
 
 
-.ag-theme-custom {
+.ag-theme-quartz.ag-theme-custom {
 	--ag-background-color: #FFF;
 	--ag-foreground-color: #074E6A;
 	--ag-text-color: var(--ag-foreground-color);
