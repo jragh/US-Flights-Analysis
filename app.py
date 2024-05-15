@@ -285,7 +285,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         return_children = [
                 html.H2('Passenger Utilization Details', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-3', id='passenger-graph-desc'),
                 dag_table
         ]
 

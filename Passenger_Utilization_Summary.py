@@ -24,7 +24,24 @@ pass_summ_table_query = """SELECT UNIQUE_CARRIER_NAME as [UNIQUE CARRIER NAME],
 
 pass_summ_table = pl.read_database_uri(query=pass_summ_table_query, uri=sqlite_path,engine='adbc')
 
-column_definition = [{'field': i, 'cellStyle': {'fontSize': '11px'}} for i in list(pass_summ_table.columns)]
+## column_definition = [{'field': i, 'cellStyle': {'fontSize': '11px'}} for i in list(pass_summ_table.columns)]
+
+column_definition = [
+    {'field': 'UNIQUE CARRIER NAME', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agTextColumnFilter', 'filterParams': {'debounceMS': 200}, 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'MONTH', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agTextColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'AIRCRAFT TYPE', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agTextColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'TOTAL ROUTES', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agNumberColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'TOTAL PASSENGERS', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agNumberColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'TOTAL SEATS', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agNumberColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}},
+    {'field': 'TOTAL DEPARTURES', 'cellStyle': {'fontSize': '11px'}, 'filter': True, 'floatingFilter': True, 
+     'filter': 'agNumberColumnFilter', 'filterParams': {'buttons': ['apply', 'reset', 'close']}}
+]
 
 summary = dag.AgGrid(
     id='passenger_utilization_summary_grid',
@@ -41,7 +58,8 @@ summary = dag.AgGrid(
     },
     columnSize='responsiveSizeToFit',
     columnSizeOptions={"skipHeader" : False},
-    className='ag-theme-quartz ag-theme-custom'
+    className='ag-theme-quartz ag-theme-custom',
+    style={'height':"48vh"}
 )
 
 

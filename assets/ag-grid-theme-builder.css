@@ -13,7 +13,7 @@
 	--ag-text-color: var(--ag-foreground-color);
 	--ag-accent-color: #074E6A;
 	--ag-invalid-color: #e02525;
-	--ag-border-color: #00000025;
+	--ag-border-color: #00000030;
 	--ag-wrapper-border: solid 1px var(--ag-border-color);
 	--ag-row-border: solid 1px var(--ag-border-color);
 	--ag-header-border: var(--ag-row-border);
@@ -29,8 +29,8 @@
 	--ag-side-bar-background-color: var(--ag-chrome-background-color);
 	--ag-font-family: 'IBM Plex Sans';
 	--ag-chrome-background-color: color-mix(in srgb, transparent, var(--ag-foreground-color) 2%);
-	--ag-header-background-color: #08336C;
-	--ag-header-foreground-color: #D8D8D8;
+	--ag-header-background-color: #0080FF1A;
+	--ag-header-foreground-color: #074E6A;
 	--ag-header-font-family: var(--ag-font-family);
 	--ag-header-font-weight: 700;
 	--ag-header-font-size: 12px;
@@ -169,6 +169,11 @@
 	--ag-input-invalid-background-color: var(--ag-input-background-color);
 	--ag-input-invalid-border: solid 1px var(--ag-invalid-color);
 	--ag-input-invalid-text-color: var(--ag-input-text-color);
+	--ag-icon-filter-color: #D8D8D8;
+}
+
+.ag-theme-quartz.ag-theme-custom .ag-header-cell {
+	font-weight: bold;
 }
 
 
