@@ -1,0 +1,21 @@
+ .header-span {
+    display: inline-block;
+    background-color: #0B2838;
+    justify-content: center;
+    width: max-content;
+    align-items: center;
+    text-align: center;
+    font-style: italic;
+    transform: skew(-15deg);
+    
+ }
+
+ .header-span h1 {
+    color: #E89C31;
+    margin-top: 4px;
+    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-left: 2px;
+    transform: skew(15deg);
+    font-size: 3em;
+ }
