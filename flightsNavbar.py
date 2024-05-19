@@ -15,11 +15,26 @@ navbar = dbc.Navbar(
         dbc.Row([
 
             dbc.Col(html.Span(html.I(className='bi bi-airplane-fill', style={'fontSize': '2em', 'color': '#E89C31'})), style={'display':'inline-block'}),
-            dbc.Col(html.Span([html.H5('FLYLYTICS', style={'margin': '0'})],className='nav-header-span-class'))
+            dbc.Col(html.Span([html.H5('FLYLYTICS')],className='nav-header-span-class'))
 
         ], class_name='g-2', align='center'),
 
-        dbc.NavbarToggler(id="navbar-toggler", n_clicks=0)
+        dbc.Row([
 
-    ], class_name='m-0'),dark=True, color='dark', class_name='p-2'
+            dbc.Nav([
+
+                dbc.NavItem(dbc.NavLink("Make Your Way on Through", href="#", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
+                dbc.DropdownMenu([
+
+                    dbc.DropdownMenuItem("Person Analytics")
+
+                ], nav=True, label='Page Navigation', color="secondary", menu_variant="dark")
+                
+            ], navbar=True, style={'alignItems': 'center'}, horizontal='end', class_name='navbar-top')
+
+        ])
+
+        
+
+    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw'
 )

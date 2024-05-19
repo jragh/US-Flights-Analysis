@@ -27,6 +27,7 @@
    text-align: center;
    align-items: center;
    width: max-content;
+   height: max-content;
    justify-content: center;
    transform: skew(-15deg);
 }
@@ -34,4 +35,24 @@
 .nav-header-span-class h5 {
     color:#0B2838;
     transform: skew(15deg);
+    margin-left: 2px;
+    margin-right: 5px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.nav-header-desc-pill {
+
+    background-color: #E89C31 !important;
+    color: #0B2838 !important;
+    border-radius: 30px !important;
+    opacity: 1 !important;
+    padding: 4px 6px !important;
+
+}
+
+.navbar-top {
+
+    margin-right: 0px !important;
+
 }
