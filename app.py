@@ -12,6 +12,7 @@ import flask
 
 from Passenger_Utilization_Summary import summary
 from PassengerAnalyticsText import passengerText
+from flightsNavbar import navbar
 
 sqlite_path = 'sqlite://US_Flights_Analytics.db'
 
@@ -42,7 +43,7 @@ app = dash.Dash(external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOT
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
-            dbc.Navbar()
+            navbar
         ], width=12)
     ]),
     dbc.Row([
@@ -96,13 +97,15 @@ app.layout = dbc.Container([
                 
 
                 ## Creating Graph Component for quick analytics ##
-                html.Div([
-                    html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
-                    html.Hr(className='my-2'),
-                    html.P('', className='mb-2', id='passenger-graph-desc'),
+                dbc.Spinner([
+                    html.Div([
+                        html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
+                        html.Hr(className='my-2'),
+                        html.P('', className='mb-2', id='passenger-graph-desc'),
 
-                    dcc.Graph(id='passengers-graph')
-                ], className='p-4 bg-light text-dark border rounded-3', id='pass_visual_div')
+                        dcc.Graph(id='passengers-graph', style={'height': '50vh'})
+                    ], className='p-4 bg-light text-dark border rounded-3', id='pass_visual_div')
+                ], show_initially=True, spinner_style={'height': '3rem', 'width': '3rem'})
 
 
                 
@@ -114,7 +117,7 @@ app.layout = dbc.Container([
         ], id='graph_section', width = 12, lg = 8, md = 12, xl = 8, xxl = 8, sm=12, class_name='px-2')
 
     ])
-])
+], fluid=True, className='mr-4 ml-4')
 
 @app.callback(
     Output(component_id='pass_visual_div', component_property='children'),
@@ -150,7 +153,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
@@ -172,7 +175,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2(f'{selected_carrier}: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
             
 
@@ -225,7 +228,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2('All Carriers: Passenger Util. (%)', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
@@ -271,7 +274,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2(f'{selected_carrier}: Passenger Seat Utilization Pct', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
