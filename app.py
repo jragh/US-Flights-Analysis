@@ -11,6 +11,8 @@ import dash
 import flask
 
 from Passenger_Utilization_Summary import summary
+from PassengerAnalyticsText import passengerText
+from flightsNavbar import navbar
 
 sqlite_path = 'sqlite://US_Flights_Analytics.db'
 
@@ -26,33 +28,34 @@ print(analytics_df.head(25))
 ## TODO: Idea for Carrier sorted list: Group by, then sort by Number of Passengers Flown descending, then select single column, to dicts, etc; 
 carrier_filter_list = sorted([val['UNIQUE_CARRIER_NAME'] for val in analytics_df.select(['UNIQUE_CARRIER_NAME']).unique().to_dicts()])
 
+## TODO: Remove Global variable when we have the sheet selection ##
+textResults = passengerText()
+
 server = flask.Flask(__name__)
 
 @server.route("/")
 def home():
     return "Hello, Flask!"
 
-app = dash.Dash(external_stylesheets=[dbc.themes.ZEPHYR, dbc_css], server = server)
+app = dash.Dash(external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], server = server)
 
 
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
-            dbc.Navbar()
+            navbar
         ], width=12)
     ]),
     dbc.Row([
 
-        dbc.Col(children =[
-            html.H1('Hello World')
-        ], id='sidebar', width = 12, lg = 4, md =12, xl = 4, xxl = 4, sm = 12, align="center"),
+        dbc.Col(children = textResults,
+                 id='sidebar', className = 'textSidebar',width = 12, lg = 4, md =12, xl = 4, xxl = 4, sm = 12, align='start'),
 
         dbc.Col(children=[
 
             dbc.Row([dbc.Col([
 
                 ## Header for the Graph Section
-                html.H2('Graphs will go here', style={'textAlign': 'center'}),
                 html.Hr(),
 
                 dbc.Row([
@@ -94,13 +97,15 @@ app.layout = dbc.Container([
                 
 
                 ## Creating Graph Component for quick analytics ##
-                html.Div([
-                    html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
-                    html.Hr(className='my-2'),
-                    html.P('', className='mb-2', id='passenger-graph-desc'),
+                dbc.Spinner([
+                    html.Div([
+                        html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
+                        html.Hr(className='my-2'),
+                        html.P('', className='mb-2', id='passenger-graph-desc'),
 
-                    dcc.Graph(id='passengers-graph')
-                ], className='p-4 bg-light text-dark border rounded-3', id='pass_visual_div')
+                        dcc.Graph(id='passengers-graph', style={'height': '50vh'})
+                    ], className='p-4 bg-light text-dark border rounded-3', id='pass_visual_div')
+                ], show_initially=True, spinner_style={'height': '3rem', 'width': '3rem'})
 
 
                 
@@ -112,7 +117,7 @@ app.layout = dbc.Container([
         ], id='graph_section', width = 12, lg = 8, md = 12, xl = 8, xxl = 8, sm=12, class_name='px-2')
 
     ])
-])
+], fluid=True, className='mr-4 ml-4')
 
 @app.callback(
     Output(component_id='pass_visual_div', component_property='children'),
@@ -136,7 +141,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure = px.bar(pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(), x='MONTH', y='TOTAL PASSENGERS',
                                 text_auto='.2s', title='Passengers Transported By Month: All Carriers')
 
-            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#023E8A", marker={"cornerradius":4})
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4})
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
 
@@ -148,7 +153,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
@@ -158,7 +163,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure = px.bar(pass_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier), x='MONTH', y='TOTAL PASSENGERS',
                                 text_auto='.2s', title=f'Passengers Transported By Month: {selected_carrier}')
 
-            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#023E8A", marker={"cornerradius":4})
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4})
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
             
@@ -170,7 +175,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2(f'{selected_carrier}: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
             
 
@@ -223,7 +228,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2('All Carriers: Passenger Util. (%)', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
@@ -269,7 +274,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                 html.H2(f'{selected_carrier}: Passenger Seat Utilization Pct', id='graph-header'),
                 html.Hr(className='my-2'),
                 html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
-                dcc.Graph(figure=bar_figure, id='passengers-graph')
+                dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
             return return_children
@@ -306,7 +311,80 @@ def pass_details_disable_carrier(selected_pass_viz, carrier_state):
         return True, None
     
     return False, carrier_state
+
+
+
+@app.callback(
+    Output(component_id='pass-1-desc', component_property='children'),
+    Output(component_id='pass-2-desc', component_property='children'),
+    Output(component_id='pass-3-desc', component_property='children'),
+    [Input(component_id='passenger-viz-selection', component_property='value')]
+)
+def highlight_active_pass_viz(selected_viz):
+
+    old_style = {'borderRadius': '50px', 'backgroundColor': 'white', 'display': 'inline-block'}
+
+    highlight_style = {'borderRadius': '50px', 'backgroundColor': '#0B2838', 'display': 'inline-block', 'padding': '0.09em 0.6em'}
+
+    if selected_viz == 'Passengers By Carrier':
+
+        child_1 = [
+            html.H6('Passengers By Carrier', className='my-0'),
+            html.Span(html.Small('1', style={'color': '#E89C31'}), style=highlight_style, id='pass-1-desc-span')
+                    ]
+        
+        child_2 = [
+            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
+            html.Span(html.Small('2', style={'color': '#0B2838'}), style=old_style, id='pass-2-desc-span')
+                ]
+        
+        child_3 = [
+            html.H6('Passenger Utilization Details', className='my-0'),
+            html.Span(html.Small('3', style={'color': '#0B2838'}), style=old_style, id='pass-3-desc-span')
+                ]
+        
+        return child_1, child_2, child_3
     
+
+    elif selected_viz == 'Passenger Utilization By Carrier (%)':
+
+        child_1 = [
+            html.H6('Passengers By Carrier', className='my-0'),
+            html.Span(html.Small('1', style={'color': '#0B2838'}), style=old_style, id='pass-1-desc-span')
+                    ]
+        
+        child_2 = [
+            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
+            html.Span(html.Small('2', style={'color': '#E89C31'}), style=highlight_style, id='pass-2-desc-span')
+                ]
+        
+        child_3 = [
+            html.H6('Passenger Utilization Details', className='my-0'),
+            html.Span(html.Small('3', style={'color': '#0B2838'}), style=old_style, id='pass-3-desc-span')
+                ]
+        
+        return child_1, child_2, child_3
+    
+
+
+    elif selected_viz == 'Passenger Utilization Details':
+
+        child_1 = [
+            html.H6('Passengers By Carrier', className='my-0'),
+            html.Span(html.Small('1', style={'color': '#0B2838'}), style=old_style, id='pass-1-desc-span')
+                    ]
+        
+        child_2 = [
+            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
+            html.Span(html.Small('2', style={'color': '#0B2838'}), style=old_style, id='pass-2-desc-span')
+                ]
+        
+        child_3 = [
+            html.H6('Passenger Utilization Details', className='my-0'),
+            html.Span(html.Small('3', style={'color': '#E89C31'}), style=highlight_style, id='pass-3-desc-span')
+                ]
+        
+        return child_1, child_2, child_3
 
 
 

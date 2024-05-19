@@ -59,7 +59,7 @@ summary = dag.AgGrid(
     columnSize='responsiveSizeToFit',
     columnSizeOptions={"skipHeader" : False},
     className='ag-theme-quartz ag-theme-custom',
-    style={'height':"48vh"}
+    style={'height':"50vh"}
 )
 
 
