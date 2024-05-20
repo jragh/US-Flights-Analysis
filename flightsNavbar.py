@@ -26,8 +26,10 @@ navbar = dbc.Navbar(
                 dbc.NavItem(dbc.NavLink("Make Your Way on Through", href="#", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
                 dbc.DropdownMenu([
 
-                    dbc.DropdownMenuItem("Person Analytics")
-
+                    dbc.DropdownMenuItem("Person Analytics"),
+                    dbc.DropdownMenuItem('Airport Analytics'),
+                    dbc.DropdownMenuItem('Route Analytics'),
+                    dbc.DropdownMenuItem('Flight Delay Analytics')
                 ], nav=True, label='Page Navigation', color="secondary", menu_variant="dark")
                 
             ], navbar=True, style={'alignItems': 'center'}, horizontal='end', class_name='navbar-top')

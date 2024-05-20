@@ -66,7 +66,7 @@ app.layout = dbc.Container([
                                 [
                                     dbc.Label('Airline Carrier Selection:  '),
                                     html.Div([dcc.Dropdown(options=carrier_filter_list, multi=False, searchable=True, clearable=True, 
-                                                           placeholder='Select an Airline Carrier here...', id='carrier-selection',
+                                                           placeholder='Select an Airline Carrier here...', id='passenger-carrier-selection',
                                                            style={'fontSize': '12px'})], className='dbc mb-2')
 
                                 ], className='pt-3 pb-2'
@@ -121,7 +121,7 @@ app.layout = dbc.Container([
 
 @app.callback(
     Output(component_id='pass_visual_div', component_property='children'),
-    [Input(component_id='carrier-selection', component_property='value'),
+    [Input(component_id='passenger-carrier-selection', component_property='value'),
      Input(component_id='passenger-viz-selection', component_property='value')
     ]
 )
@@ -152,7 +152,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             return_children = [
                 html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-2 text-muted', id='passenger-graph-desc'),
                 dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
@@ -174,7 +174,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             return_children = [
                 html.H2(f'{selected_carrier}: Number of Passengers Transported', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-2 text-muted', id='passenger-graph-desc'),
                 dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
             
@@ -227,7 +227,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             return_children = [
                 html.H2('All Carriers: Passenger Util. (%)', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-2 text-muted', id='passenger-graph-desc'),
                 dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
@@ -273,7 +273,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             return_children = [
                 html.H2(f'{selected_carrier}: Passenger Seat Utilization Pct', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-2', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-2 text-muted', id='passenger-graph-desc'),
                 dcc.Graph(figure=bar_figure, id='passengers-graph', style={'height': '52vh'})
             ]
 
@@ -290,7 +290,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         return_children = [
                 html.H2('Passenger Utilization Details', id='graph-header'),
                 html.Hr(className='my-2'),
-                html.P(pass_graph_desc, className='mb-3', id='passenger-graph-desc'),
+                html.P(pass_graph_desc, className='mb-3 text-muted', id='passenger-graph-desc'),
                 dag_table
         ]
 
@@ -299,10 +299,10 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
 
 @app.callback(
-    Output(component_id='carrier-selection', component_property='disabled'),
-    Output(component_id='carrier-selection', component_property='value'),
+    Output(component_id='passenger-carrier-selection', component_property='disabled'),
+    Output(component_id='passenger-carrier-selection', component_property='value'),
     [Input(component_id='passenger-viz-selection', component_property='value')],
-    State(component_id='carrier-selection', component_property='value')
+    State(component_id='passenger-carrier-selection', component_property='value')
 )
 def pass_details_disable_carrier(selected_pass_viz, carrier_state):
 
@@ -313,7 +313,7 @@ def pass_details_disable_carrier(selected_pass_viz, carrier_state):
     return False, carrier_state
 
 
-
+## This Callback is for the Passenger visualization components ##
 @app.callback(
     Output(component_id='pass-1-desc', component_property='children'),
     Output(component_id='pass-2-desc', component_property='children'),
