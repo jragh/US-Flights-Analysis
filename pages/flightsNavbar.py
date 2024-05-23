@@ -29,6 +29,7 @@ def navbar_named(page_name):
                 dbc.NavItem(dbc.NavLink(f"{named_navbar}", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
                 dbc.DropdownMenu([
 
+                    dbc.DropdownMenuItem('Home', href='/'),
                     dbc.DropdownMenuItem("Person Analytics", href='/PassengerAnalytics'),
                     dbc.DropdownMenuItem('Airport Analytics', href='/AirportAnalytics'),
                     dbc.DropdownMenuItem('Route Analytics'),
