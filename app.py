@@ -26,7 +26,7 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 # ## TODO: Remove Global variable when we have the sheet selection ##
 # textResults = passengerText()
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True)
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True, suppress_callback_exceptions=True)
 
 dash.register_page(__name__, path='/')
 
