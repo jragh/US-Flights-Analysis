@@ -32,7 +32,7 @@ ORDER BY b.[DESCRIPTION] ASC;"""
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
-airports_visual_list = ["Passengers By Routes (Scatter)"]
+airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Stats w/ Carrier (Donut)']
 
 
 layout = html.Div([dbc.Container([
@@ -49,9 +49,6 @@ layout = html.Div([dbc.Container([
         dbc.Col(children=[
 
             dbc.Row([dbc.Col([
-
-                ## Header for the Graph Section
-                html.Hr(),
 
                 dbc.Row([
                     dbc.Col([
@@ -121,8 +118,6 @@ layout = html.Div([dbc.Container([
 )
 def select_airport_visual(selected_viz, selected_airport):
 
-    print(selected_viz, selected_airport)
-
     if selected_viz == airports_visual_list[0]:
 
         airport_visual_desc = "Highlights the number of passengers transported by a given carrier vs. the amount of cities that are reachable using that carrier. If no airport is selected, then the analysis is for the entire United States. Size of bubble shows number of flights that departed from the given airport."
@@ -158,19 +153,30 @@ def select_airport_visual(selected_viz, selected_airport):
                 x='TOTAL DESTINATION AIRPORTS',
                 y='TOTAL DEPARTED FLIGHTS',
                 size='TOTAL PASSENGERS',
-                size_max=40,
-                opacity=0.7,
-                log_y = True,
-                hover_name='UNIQUE CARRIER NAME'
+                custom_data=['UNIQUE CARRIER NAME', 'TOTAL PASSENGERS'],
+                size_max=50,
+                opacity=0.7
             )
 
-            scatter_figure.update_layout(margin={'r': 20, 't': 30, 'b':40})
+            scatter_figure.update_layout(margin={'r': 20, 't': 30, 'b':40}, 
+                                         hoverlabel={'font': {'color': '#0B2838'},'bgcolor':'#E89C31'}, 
+                                         plot_bgcolor='white',
+                                        yaxis={'tickfont': {'size': 10}},
+                                        xaxis={'tickfont': {'size': 10}})  
+
+            scatter_figure.update_traces(hovertemplate="<b>%{customdata[0]}</b><br><br><b>Destination Airports: </b>%{x}<br><b>Departed Flights: </b>%{y:,.0f}<br><br><b><i>Passengers: %{customdata[1]:,.0f}</i></b>")
+
+            scatter_figure.update_traces(marker={'color': '#0B2838'}, line={'width': 1, "color": '#E89C31'})
+
+            scatter_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
+            
+            scatter_figure.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
 
             return_children = [
 
                 html.H2(f"{selected_viz}: All Airports", id='airports-graph-header'),
                 html.Hr(className='my-2'),
-                html.P(airport_visual_desc, className='mb-2', id='airports-graph-desc'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
 
                 dcc.Graph(id='airports-graph', style={'height': '50vh'}, figure=scatter_figure)
 
@@ -181,11 +187,83 @@ def select_airport_visual(selected_viz, selected_airport):
         
         else:
 
+            airports_query = f"""SELECT * FROM [T100_ORIGIN_AIRPORTS_AGGREGATE] where [ORIGIN AIRPORT NAME] = '{selected_airport}'"""
+
+            airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
+
+            total_pass_sum = airports_polars.select(pl.sum('TOTAL PASSENGERS'))
+
+            print(total_pass_sum.item())
+
+            scatter_figure = px.scatter(airports_polars.select(["ORIGIN AIRPORT NAME", "UNIQUE CARRIER NAME", "TOTAL PASSENGERS", "TOTAL DEPARTED FLIGHTS", "TOTAL DESTINATION AIRPORTS"]),
+                                        x='TOTAL DESTINATION AIRPORTS',
+                                        y='TOTAL DEPARTED FLIGHTS',
+                                        size="TOTAL PASSENGERS",
+                                        custom_data=['UNIQUE CARRIER NAME', 'TOTAL PASSENGERS'],
+                                        size_max=50,
+                                        opacity=0.7)
+            
+            scatter_figure.update_layout(margin={'r': 20, 't': 30, 'b':40}, 
+                                         hoverlabel={'font': {'color': '#0B2838'},'bgcolor':'#E89C31'}, 
+                                         plot_bgcolor='white',
+                                        yaxis={'tickfont': {'size': 10}},
+                                        xaxis={'tickfont': {'size': 10}})  
+
+            scatter_figure.update_traces(hovertemplate="<b>%{customdata[0]}</b><br><br><b>Destination Airports: </b>%{x}<br><b>Departed Flights: </b>%{y:,.0f}<br><br><b><i>Passengers: %{customdata[1]:,.0f}</i></b>")
+
+            scatter_figure.update_traces(marker={'color': '#0B2838'}, line={'width': 1, "color": '#E89C31'})
+
+            scatter_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
+            
+            scatter_figure.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
             return_children = [
 
+                html.H2(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.Hr(className='my-2'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
 
+                dcc.Graph(id='airports-graph', style={'height': '50vh'}, figure=scatter_figure)
 
             ]
 
             return return_children
+        
+    
+    elif selected_viz == airports_visual_list[1]:
+
+        airport_visual_desc = 'Testing Phrase for pie chart. Will think of something in the futurue.'
+
+        if selected_airport is None or selected_airport.strip() == '' or selected_airport == '':
+
+            return_children = [
+
+                html.H2(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.Hr(className='my-2'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
+
+                dbc.Row([
+
+                    dbc.Col([], width=12, sm=9, class_name='px-2', style={'backgroundColor': '#0B2838'}),
+                    dbc.Col([
+
+                        dbc.Stack([
+
+                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
+                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
+                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
+                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'})
+
+
+                        ], gap=2)
+
+                    ], width=12, sm=3, class_name='px-2 d-flex flex-column align-items-stretch') 
+
+                ], style={'height': '52vh'})
+
+            ]
+
+            return return_children
+
+
 

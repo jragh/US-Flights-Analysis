@@ -5,7 +5,9 @@ def airport_text():
 
     return_array = [
 
-        dbc.Stack(
+        html.Div([
+
+            dbc.Stack(
             [
                 html.Span(
                     html.H1('AIRPORT'), className= 'header-span'
@@ -22,6 +24,8 @@ def airport_text():
             html.H6('Explore data and stats about Airports across the United States.', style={'fontWeight': 100})
 
         ], style={'margin': 'auto', 'textAlign': 'center', 'justify': 'center'})
+
+        ], className='title-animate') 
 
     ]
 

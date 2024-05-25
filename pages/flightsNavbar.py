@@ -42,7 +42,7 @@ def navbar_named(page_name):
 
         
 
-    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw'
+    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw mb-2'
 )
 
     return navbar

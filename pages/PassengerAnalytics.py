@@ -42,9 +42,6 @@ layout = dbc.Container([
 
             dbc.Row([dbc.Col([
 
-                ## Header for the Graph Section
-                html.Hr(),
-
                 dbc.Row([
                     dbc.Col([
                         
