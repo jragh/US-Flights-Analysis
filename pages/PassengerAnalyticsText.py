@@ -9,7 +9,10 @@ from plotly.subplots import make_subplots
 def passengerText():
 
     returnArray = [
-        dbc.Stack(
+
+        html.Div([
+
+            dbc.Stack(
             [
                 html.Span(
                     html.H1('PASSENGER'), className= 'header-span'
@@ -18,17 +21,19 @@ def passengerText():
                     html.H1('ANALYTICS'), className = 'header-span'
                 )
             ], gap=1, style={'textAlign': '-webkit-center'}, className="my-4"
-        ),
-
-        html.Div([
-
-            html.Span(
-                html.I(className='bi bi-people-fill me-2', style={'color': '#0B2838', 'fontSize': '4em'}), style={'display': 'inline-block'}
             ),
-            
-            html.H6('Here is some example text describing what the passenger analytics will be like', style={'fontWeight': 100})
 
-        ], style={'margin': 'auto', 'justifyContent': 'center', 'textAlign': 'center'}),
+            html.Div([
+
+                html.Span(
+                    html.I(className='bi bi-people-fill me-2', style={'color': '#0B2838', 'fontSize': '4em'}), style={'display': 'inline-block'}
+                ),
+
+                html.H6('Here is some example text describing what the passenger analytics will be like', style={'fontWeight': 100})
+
+                ], style={'margin': 'auto', 'justifyContent': 'center', 'textAlign': 'center'})
+
+        ], className='title-animate'),
 
         html.Div([
             dbc.ListGroup([

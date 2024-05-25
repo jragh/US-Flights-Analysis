@@ -8,8 +8,11 @@ from plotly.subplots import make_subplots
 import dash
 
 
+def navbar_named(page_name):
 
-navbar = dbc.Navbar(
+    named_navbar = page_name
+
+    navbar = dbc.Navbar(
     dbc.Container([
 
         dbc.Row([
@@ -23,11 +26,14 @@ navbar = dbc.Navbar(
 
             dbc.Nav([
 
-                dbc.NavItem(dbc.NavLink("Make Your Way on Through", href="#", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
+                dbc.NavItem(dbc.NavLink(f"{named_navbar}", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
                 dbc.DropdownMenu([
 
-                    dbc.DropdownMenuItem("Person Analytics")
-
+                    dbc.DropdownMenuItem('Home', href='/'),
+                    dbc.DropdownMenuItem("Person Analytics", href='/PassengerAnalytics'),
+                    dbc.DropdownMenuItem('Airport Analytics', href='/AirportAnalytics'),
+                    dbc.DropdownMenuItem('Route Analytics'),
+                    dbc.DropdownMenuItem('Flight Delay Analytics')
                 ], nav=True, label='Page Navigation', color="secondary", menu_variant="dark")
                 
             ], navbar=True, style={'alignItems': 'center'}, horizontal='end', class_name='navbar-top')
@@ -36,5 +42,7 @@ navbar = dbc.Navbar(
 
         
 
-    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw'
+    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw mb-2'
 )
+
+    return navbar

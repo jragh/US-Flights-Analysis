@@ -56,3 +56,25 @@
     margin-right: 0px !important;
 
 }
+
+
+.title-animate {
+
+    position: relative;
+    animation: fadeIn 1.25s ease-in-out, upwardMove 1s ease-in-out;
+
+}
+
+@keyframes fadeIn {
+
+    0% {opacity: 0%;}
+    100% {opacity: 100%;}
+
+}
+
+@keyframes upwardMove {
+
+    0% {transform: translateY(.9em);}
+    100% {transform: translateY(0);}
+
+}
