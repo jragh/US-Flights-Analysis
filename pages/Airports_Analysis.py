@@ -236,6 +236,58 @@ def select_airport_visual(selected_viz, selected_airport):
 
         if selected_airport is None or selected_airport.strip() == '' or selected_airport == '':
 
+            airports_query = """
+            select a.[UNIQUE_CARRIER_NAME] as [UNIQUE CARRIER NAME],
+                SUM(CAST(a.[PASSENGERS] AS INT)) AS [TOTAL PASSENGERS],
+                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) AS [TOTAL DEPARTED FLIGHTS],
+                CAST(COUNT(DISTINCT a.[DEST_AIRPORT_ID]) as INT) as [TOTAL DESTINATION AIRPORTS]
+
+                from [T100_SEGMENT_ALL_CARRIER_2023] a
+                left join [T100_AIRPORT_CODE_LOOKUP_2023] b
+                on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
+
+                where CAST(a.[PASSENGERS] AS INT) > 0
+                and CAST(a.[SEATS] AS INT) > 0
+                AND CAST(a.[DEPARTURES_PERFORMED] as int) > 0
+                and b.[DESCRIPTION] IS NOT NULL
+                AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
+
+                GROUP BY a.[UNIQUE_CARRIER_NAME]
+
+                order by a.[UNIQUE_CARRIER_NAME]
+            """
+
+            airports_unique_destination_query = """
+            select COUNT(distinct c.[DESCRIPTION]) as [TOTAL DESTINATION AIRPORTS]
+            FROM [T100_SEGMENT_ALL_CARRIER_2023] a
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] b
+            on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] c
+            on a.[DEST_AIRPORT_ID] = c.[CODE]
+
+            WHERE CAST(a.[PASSENGERS] AS INT) > 0 
+            AND CAST([DEPARTURES_PERFORMED] AS INT) > 0
+            AND b.[DESCRIPTION] is not null
+            AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
+            and c.[DESCRIPTION] IS NOT NULL
+            """
+
+            airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
+
+            airports_unique_destinations_polars = pl.read_database_uri(engine='adbc', query=airports_unique_destination_query, uri=sqlite_path)
+
+            airports_passenger_max = airports_polars.select(pl.sum('TOTAL PASSENGERS')).item()
+
+            airports_departed_max = airports_polars.select(pl.sum('TOTAL DEPARTED FLIGHTS')).item()
+
+            airports_carriers_unique = airports_polars.n_unique(subset=["UNIQUE CARRIER NAME"])
+
+            airports_unique_destinations = airports_unique_destinations_polars.select('TOTAL DESTINATION AIRPORTS').row(0)
+
+            pie_figure = px.pie()
+
+
+
             return_children = [
 
                 html.H2(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
@@ -244,22 +296,47 @@ def select_airport_visual(selected_viz, selected_airport):
 
                 dbc.Row([
 
-                    dbc.Col([], width=12, sm=9, class_name='px-2', style={'backgroundColor': '#0B2838'}),
                     dbc.Col([
 
-                        dbc.Stack([
+                        dbc.CardGroup([
 
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'})
+                            dbc.Card([
+                                dbc.CardHeader('Total Passengers', style={'color': '#0B2838', 'textAlign': 'center'}, class_name='p-2'),
+                                dbc.CardBody([
+                                    html.H4("{:,.0f}".format(airports_passenger_max), style={'marginBottom': 0, 'color': '#0B2838'})
+                                ], style={'textAlign': 'center'}, class_name="px-2 py-3")
+                            ], color='#E89C31', style={'borderRadius': "5px"}),
 
+                            dbc.Card([
+                                dbc.CardHeader('Total Departed Flights', style={'color': '#0B2838', 'textAlign': 'center'}, class_name='p-2'),
+                                dbc.CardBody([
+                                    html.H4("{:,.0f}".format(airports_departed_max), style={'marginBottom': 0, 'color': '#0B2838'})
+                                ], style={'textAlign': 'center'}, class_name="px-2 py-3")
+                            ], color='#E89C31', style={'borderRadius': "5px"}),
 
-                        ], gap=2)
+                            dbc.Card([
+                                dbc.CardHeader('Total Carriers', style={'color': '#0B2838', 'textAlign': 'center'}, class_name='p-2'),
+                                dbc.CardBody([
+                                    html.H4("{:,.0f}".format(airports_carriers_unique), style={'marginBottom': 0, 'color': '#0B2838'})
+                                ], style={'textAlign': 'center'}, class_name="px-2 py-3")
+                            ], color='#E89C31', style={'borderRadius': "5px"}),
 
-                    ], width=12, sm=3, class_name='px-2 d-flex flex-column align-items-stretch') 
+                            dbc.Card([
+                                dbc.CardHeader('Total Flight Destinations', style={'color': '#0B2838', 'textAlign': 'center'}, class_name='p-2'),
+                                dbc.CardBody([
+                                    html.H4("{:,.0f}".format(airports_unique_destinations[0]), style={'marginBottom': 0, 'color': '#0B2838'})
+                                ], style={'textAlign': 'center'}, class_name="px-2 py-3")
+                            ], color='#E89C31', style={'borderRadius': "5px"})
 
-                ], style={'height': '52vh'})
+                        ], style={"columnGap": "1em"})
+
+                    ])
+
+                ], style={'height': '12vh'}),
+
+                dbc.Row([
+
+                ], style={'height': '45vh'})
 
             ]
 
