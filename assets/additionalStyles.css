@@ -78,3 +78,30 @@
     100% {transform: translateY(0);}
 
 }
+
+
+.accordion-button {
+    color: #0B2838;
+    font-weight:100;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #A2D2FF;
+    color: #0B2838;
+    font-weight:bold;
+    border-width: medium;
+    border-color: #0B2838;
+}
+
+.accordion-body {
+
+    background-color: #f9f9f9;
+
+}
+
+.accordion-item {
+
+    border-width: 1px;
+    border-color: rgba(30,30,30,0.15);
+
+}
