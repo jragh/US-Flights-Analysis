@@ -5,10 +5,9 @@ import plotly_express as px
 
 import dash
 
-import flask
-
 from .flightsNavbar import navbar_named
 from .AirportAnalyticsText import airport_text
+from .Airports_Analysis_Cards import generateSummaryCard
 
 dash.register_page(__name__, path='/AirportAnalytics')
 
@@ -32,7 +31,7 @@ ORDER BY b.[DESCRIPTION] ASC;"""
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
-airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Stats w/ Carrier (Donut)']
+airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap']
 
 
 layout = html.Div([dbc.Container([
@@ -57,7 +56,7 @@ layout = html.Div([dbc.Container([
                             dbc.CardBody(
                                 [
                                     dbc.Label('Visual Selection: '),
-                                    html.Div([dcc.Dropdown(value=airports_visual_list[0], options=airports_visual_list, multi=False, searchable=True, clearable=False, 
+                                    html.Div([dcc.Dropdown(value=airports_visual_list[1], options=airports_visual_list, multi=False, searchable=True, clearable=False, 
                                                            placeholder='Select a visual here...', id='airport-viz-selection',
                                                            style={'fontSize': '12px'})], className='dbc mb-2')
                                 ], className='pt-3 pb-2'
@@ -93,7 +92,7 @@ layout = html.Div([dbc.Container([
                         html.Hr(className='my-2'),
                         html.P('', className='mb-2', id='airports-graph-desc'),
 
-                        dcc.Graph(id='airports-graph', style={'height': '50vh'})
+                        dcc.Graph(id='airports-graph')
                     ], className='p-4 bg-light text-dark border rounded-3', id='airports-visual-div')
                 ], show_initially=True, spinner_style={'height': '3rem', 'width': '3rem'})
 
@@ -191,10 +190,6 @@ def select_airport_visual(selected_viz, selected_airport):
 
             airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
 
-            total_pass_sum = airports_polars.select(pl.sum('TOTAL PASSENGERS'))
-
-            print(total_pass_sum.item())
-
             scatter_figure = px.scatter(airports_polars.select(["ORIGIN AIRPORT NAME", "UNIQUE CARRIER NAME", "TOTAL PASSENGERS", "TOTAL DEPARTED FLIGHTS", "TOTAL DESTINATION AIRPORTS"]),
                                         x='TOTAL DESTINATION AIRPORTS',
                                         y='TOTAL DEPARTED FLIGHTS',
@@ -205,7 +200,7 @@ def select_airport_visual(selected_viz, selected_airport):
             
             scatter_figure.update_layout(margin={'r': 20, 't': 30, 'b':40}, 
                                          hoverlabel={'font': {'color': '#0B2838'},'bgcolor':'#E89C31'}, 
-                                         plot_bgcolor='white',
+                                         plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
                                         yaxis={'tickfont': {'size': 10}},
                                         xaxis={'tickfont': {'size': 10}})  
 
@@ -213,9 +208,9 @@ def select_airport_visual(selected_viz, selected_airport):
 
             scatter_figure.update_traces(marker={'color': '#0B2838'}, line={'width': 1, "color": '#E89C31'})
 
-            scatter_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
+            scatter_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(180, 180, 180)', zeroline=False)
             
-            scatter_figure.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+            scatter_figure.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)")
 
             return_children = [
 
@@ -236,34 +231,218 @@ def select_airport_visual(selected_viz, selected_airport):
 
         if selected_airport is None or selected_airport.strip() == '' or selected_airport == '':
 
+            airports_query = """
+            select a.[UNIQUE_CARRIER_NAME] as [UNIQUE CARRIER NAME],
+                SUM(CAST(a.[PASSENGERS] AS INT)) AS [TOTAL PASSENGERS],
+                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) AS [TOTAL DEPARTED FLIGHTS],
+                CAST(COUNT(DISTINCT a.[DEST_AIRPORT_ID]) as INT) as [TOTAL DESTINATION AIRPORTS]
+
+                from [T100_SEGMENT_ALL_CARRIER_2023] a
+                left join [T100_AIRPORT_CODE_LOOKUP_2023] b
+                on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
+
+                where CAST(a.[PASSENGERS] AS INT) > 0
+                and CAST(a.[SEATS] AS INT) > 0
+                AND CAST(a.[DEPARTURES_PERFORMED] as int) > 0
+                and b.[DESCRIPTION] IS NOT NULL
+                AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
+
+                GROUP BY a.[UNIQUE_CARRIER_NAME]
+
+                order by a.[UNIQUE_CARRIER_NAME]
+            """
+
+            airports_unique_destination_query = """
+            select COUNT(distinct c.[DESCRIPTION]) as [TOTAL DESTINATION AIRPORTS]
+            FROM [T100_SEGMENT_ALL_CARRIER_2023] a
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] b
+            on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] c
+            on a.[DEST_AIRPORT_ID] = c.[CODE]
+
+            WHERE CAST(a.[PASSENGERS] AS INT) > 0 
+            AND CAST([DEPARTURES_PERFORMED] AS INT) > 0
+            AND b.[DESCRIPTION] is not null
+            AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
+            and c.[DESCRIPTION] IS NOT NULL
+            """
+
+            airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
+
+            airports_unique_destinations_polars = pl.read_database_uri(engine='adbc', query=airports_unique_destination_query, uri=sqlite_path)
+
+            ## TODO: Remap from Polars to SQL backend, update query to pull what is needed.
+            airports_passenger_max = airports_polars.select(pl.sum('TOTAL PASSENGERS')).item()
+
+            airports_departed_max = airports_polars.select(pl.sum('TOTAL DEPARTED FLIGHTS')).item()
+
+            airports_carriers_unique = airports_polars.n_unique(subset=["UNIQUE CARRIER NAME"])
+
+            airports_unique_destinations = airports_unique_destinations_polars.select('TOTAL DESTINATION AIRPORTS').row(0)[0]
+
+            airports_polars = airports_polars.with_columns(pl.when(pl.col("TOTAL PASSENGERS") < (airports_passenger_max / 100))
+                                         .then(pl.lit('Other Carriers')).otherwise(pl.col("UNIQUE CARRIER NAME")).alias('UNIQUE CARRIER SIMPLIFIED'))
+
+            tree_figure=px.treemap(airports_polars, path=[px.Constant('All Carriers'), 'UNIQUE CARRIER SIMPLIFIED'], values='TOTAL PASSENGERS',
+                                   custom_data=['UNIQUE CARRIER SIMPLIFIED', 'TOTAL PASSENGERS', 'TOTAL DEPARTED FLIGHTS', 'TOTAL DESTINATION AIRPORTS'],
+                                   color='TOTAL PASSENGERS', color_continuous_scale=['#7CC6FE', '#0B2838'])
+            
+            tree_figure.update_traces(texttemplate="<b>%{customdata[0]}</b><br><br>Passengers: %{customdata[1]:,.0f} <br>Departed Flights: %{customdata[2]:,.0f}<br>Destinations: %{customdata[3]:,.0f}",
+                                      root_color='#f9f9f9', marker={'cornerradius': 5})
+
+            tree_figure.update_layout(margin={'t':0, 'b':0, 'l': 0, 'r': 0}, showlegend=False)
+
+            tree_figure.update_coloraxes(showscale=False)
+
+
             return_children = [
 
-                html.H2(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.H3(f"{selected_viz}: All Airports", id='airports-graph-header'),
                 html.Hr(className='my-2'),
                 html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
 
                 dbc.Row([
 
-                    dbc.Col([], width=12, sm=9, class_name='px-2', style={'backgroundColor': '#0B2838'}),
                     dbc.Col([
 
-                        dbc.Stack([
+                        dbc.CardGroup([
 
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'}),
-                            dbc.Card([], class_name='w-100', color='#E89C31', style={'height': '25%'})
+                            generateSummaryCard('Total Passengers', '#E89C31', "{:,.0f}".format(airports_passenger_max)),
 
+                            generateSummaryCard('Total Departed Flights', '#E89C31', "{:,.0f}".format(airports_departed_max)),
 
-                        ], gap=2)
+                            generateSummaryCard('Total Carriers', '#E89C31', "{:,.0f}".format(airports_carriers_unique)),
 
-                    ], width=12, sm=3, class_name='px-2 d-flex flex-column align-items-stretch') 
+                            generateSummaryCard('Total Flight Destinations', '#E89C31', "{:,.0f}".format(airports_unique_destinations))
 
-                ], style={'height': '52vh'})
+                        ], style={"columnGap": "1em"})
+
+                    ])
+
+                ], style={'marginBottom': '1em'}),
+
+                dbc.Row([
+
+                    dcc.Graph(figure=tree_figure, style={'minHeight': '42vh'})
+
+                ])
+
+            ]
+
+            return return_children
+        
+        else:
+
+            ## SQL Queries to pull airports information ##
+            airports_query = f"""
+            select [ORIGIN AIRPORT NAME],
+            [UNIQUE CARRIER NAME],
+            [TOTAL PASSENGERS],
+            [TOTAL DEPARTED FLIGHTS],
+            [TOTAL DESTINATION AIRPORTS]
+              from [T100_ORIGIN_AIRPORTS_AGGREGATE]
+            where [ORIGIN AIRPORT NAME] like '{selected_airport}'
+            """
+
+            airports_unique_destination_query = f"""
+            select COUNT(distinct c.[DESCRIPTION]) as [TOTAL DESTINATION AIRPORTS]
+            FROM [T100_SEGMENT_ALL_CARRIER_2023] a
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] b
+            on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
+            left join [T100_AIRPORT_CODE_LOOKUP_2023] c
+            on a.[DEST_AIRPORT_ID] = c.[CODE]
+
+            WHERE CAST(a.[PASSENGERS] AS INT) > 0 
+            AND CAST([DEPARTURES_PERFORMED] AS INT) > 0
+            AND b.[DESCRIPTION] is not null
+            AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
+            and c.[DESCRIPTION] IS NOT NULL
+            and b.[DESCRIPTION] = '{selected_airport}'
+            """
+
+            ## Polars Queries to pull data from SQL database with queries defined above ##
+            airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
+
+            airports_unique_destinations_polars = pl.read_database_uri(engine='adbc', query=airports_unique_destination_query, uri=sqlite_path)
+
+            ## Set up of Summary stats for Airport based on passengers, departed flights, unique carriers, destination airports ##
+            airports_passenger_max = airports_polars.select(pl.sum('TOTAL PASSENGERS')).item()
+
+            airports_departed_max = airports_polars.select(pl.sum('TOTAL DEPARTED FLIGHTS')).item()
+
+            airports_carriers_unique = airports_polars.n_unique(subset=["UNIQUE CARRIER NAME"])
+
+            airports_unique_destinations = airports_unique_destinations_polars.select('TOTAL DESTINATION AIRPORTS').row(0)[0]
+
+            ## Add in Simplified Unique Carrier Column as 'Other Carriers' if carried less than 1 percent of passengers ##
+            airports_polars = airports_polars.with_columns(pl.when(pl.col("TOTAL PASSENGERS") < (airports_passenger_max / 100))
+                                         .then(pl.lit('Other Carriers')).otherwise(pl.col("UNIQUE CARRIER NAME")).alias('UNIQUE CARRIER SIMPLIFIED'))
+
+            ## Tree figure definition ##
+            tree_figure=px.treemap(airports_polars, path=[px.Constant('All Carriers'), 'UNIQUE CARRIER SIMPLIFIED'], values='TOTAL PASSENGERS',
+                                   custom_data=['UNIQUE CARRIER SIMPLIFIED', 'TOTAL PASSENGERS', 'TOTAL DEPARTED FLIGHTS', 'TOTAL DESTINATION AIRPORTS'],
+                                   color='TOTAL PASSENGERS', color_continuous_scale=['#7CC6FE', '#0B2838'])
+            
+            tree_figure.update_traces(texttemplate="<b>%{customdata[0]}</b><br><br>Passengers: %{customdata[1]:,.0f} <br>Departed Flights: %{customdata[2]:,.0f}<br>Destinations: %{customdata[3]:,.0f}",
+                                      root_color='#f9f9f9', marker={'cornerradius': 5})
+
+            tree_figure.update_layout(margin={'t':0, 'b':0, 'l': 0, 'r': 0}, showlegend=False)
+
+            tree_figure.update_coloraxes(showscale=False)
+
+            ## Final Return to display Tree Map Graph with headers ##
+            return_children = [
+
+                html.H3(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.Hr(className='my-2'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
+
+                dbc.Row([
+
+                    dbc.Col([
+
+                        dbc.CardGroup([
+
+                            generateSummaryCard('Total Passengers', '#E89C31', "{:,.0f}".format(airports_passenger_max)),
+
+                            generateSummaryCard('Total Departed Flights', '#E89C31', "{:,.0f}".format(airports_departed_max)),
+
+                            generateSummaryCard('Total Carriers', '#E89C31', "{:,.0f}".format(airports_carriers_unique)),
+
+                            generateSummaryCard('Total Flight Destinations', '#E89C31', "{:,.0f}".format(airports_unique_destinations))
+
+                        ], style={"columnGap": "1em"})
+
+                    ])
+
+                ], style={'marginBottom': '1em'}),
+
+                dbc.Row([
+
+                    dcc.Graph(figure=tree_figure, style={'minHeight': '42vh'})
+
+                    
+
+                ])
 
             ]
 
             return return_children
 
+
+
+@callback(
+    Output(component_id='airport-viz-accordion', component_property='active-item'),
+    Input(component_id='airport-viz-selection', component_property='value')
+)
+def update_airport_accordion(selected_viz):
+
+    if selected_viz == airports_visual_list[0]:
+
+        return "airports-item-1"
+    
+    elif selected_viz == airports_visual_list[1]:
+
+        return "airports-item-2"
 
 

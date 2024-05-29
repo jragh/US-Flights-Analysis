@@ -306,9 +306,9 @@ def pass_details_disable_carrier(selected_pass_viz, carrier_state):
 )
 def highlight_active_pass_viz(selected_viz):
 
-    old_style = {'borderRadius': '50px', 'backgroundColor': 'white', 'display': 'inline-block'}
+    old_style = {'borderRadius': '50%', 'backgroundColor': 'white', 'display': 'inline-block'}
 
-    highlight_style = {'borderRadius': '50px', 'backgroundColor': '#0B2838', 'display': 'inline-block', 'padding': '0.09em 0.6em'}
+    highlight_style = {'borderRadius': '50%', 'backgroundColor': '#0B2838', 'display': 'inline-block', 'padding': '0.09em 0.6em'}
 
     if selected_viz == 'Passengers By Carrier':
 
@@ -369,5 +369,4 @@ def highlight_active_pass_viz(selected_viz):
                 ]
         
         return child_1, child_2, child_3
-
 
