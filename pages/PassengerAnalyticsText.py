@@ -31,7 +31,7 @@ def passengerText():
 
                 html.H6('Here is some example text describing what the passenger analytics will be like', style={'fontWeight': 100})
 
-                ], style={'margin': 'auto', 'justifyContent': 'center', 'textAlign': 'center'})
+                ], style={'margin': 'auto 0 auto 2em', 'justifyContent': 'center', 'textAlign': 'center'})
 
         ], className='title-animate'),
 
