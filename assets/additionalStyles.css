@@ -105,3 +105,7 @@
     border-color: rgba(30,30,30,0.15);
 
 }
+
+.navbar-nav .dropdown-menu {
+    position: absolute;
+}
