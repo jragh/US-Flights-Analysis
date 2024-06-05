@@ -31,7 +31,7 @@ ORDER BY b.[DESCRIPTION] ASC;"""
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
-airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap']
+airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap', 'Airport Monthly Passengers & Flights']
 
 
 layout = html.Div([dbc.Container([
@@ -92,7 +92,7 @@ layout = html.Div([dbc.Container([
                         html.Hr(className='my-2'),
                         html.P('', className='mb-2', id='airports-graph-desc'),
 
-                        dcc.Graph(id='airports-graph')
+                        dcc.Graph(id='airports-graph', style={'display': 'block'})
                     ], className='p-4 bg-light text-dark border rounded-3', id='airports-visual-div')
                 ], show_initially=True, spinner_style={'height': '3rem', 'width': '3rem'})
 
@@ -173,9 +173,10 @@ def select_airport_visual(selected_viz, selected_airport):
 
             return_children = [
 
-                html.H2(f"{selected_viz}: All Airports", id='airports-graph-header'),
+                html.H2(f"{selected_viz}: All Airports", id='airports-graph-header', style={'marginBottom': '0.1em'}),
+                html.P('(All Airports in US)', id='airports-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
                 html.Hr(className='my-2'),
-                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}),
 
                 dcc.Graph(id='airports-graph', style={'height': '50vh'}, figure=scatter_figure)
 
@@ -214,9 +215,10 @@ def select_airport_visual(selected_viz, selected_airport):
 
             return_children = [
 
-                html.H2(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.H2(f"{selected_viz}", id='airports-graph-header', style={'marginBottom': '0.1em'}),
+                html.P(f"({selected_airport})", id='airports-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
                 html.Hr(className='my-2'),
-                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}),
 
                 dcc.Graph(id='airports-graph', style={'height': '50vh'}, figure=scatter_figure)
 
@@ -227,7 +229,7 @@ def select_airport_visual(selected_viz, selected_airport):
     
     elif selected_viz == airports_visual_list[1]:
 
-        airport_visual_desc = 'Testing Phrase for pie chart. Will think of something in the futurue.'
+        airport_visual_desc = 'Treemap displaying airline carriers operating at the given airport based on the number of departing passengers from that airport.'
 
         if selected_airport is None or selected_airport.strip() == '' or selected_airport == '':
 
@@ -341,7 +343,7 @@ def select_airport_visual(selected_viz, selected_airport):
             [TOTAL DEPARTED FLIGHTS],
             [TOTAL DESTINATION AIRPORTS]
               from [T100_ORIGIN_AIRPORTS_AGGREGATE]
-            where [ORIGIN AIRPORT NAME] like '{selected_airport}'
+            where [ORIGIN AIRPORT NAME] like '{selected_airport.replace("'", "''")}'
             """
 
             airports_unique_destination_query = f"""
@@ -357,7 +359,7 @@ def select_airport_visual(selected_viz, selected_airport):
             AND b.[DESCRIPTION] is not null
             AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
             and c.[DESCRIPTION] IS NOT NULL
-            and b.[DESCRIPTION] = '{selected_airport}'
+            and b.[DESCRIPTION] = "{selected_airport.replace("'", "''")}"
             """
 
             ## Polars Queries to pull data from SQL database with queries defined above ##
@@ -393,9 +395,10 @@ def select_airport_visual(selected_viz, selected_airport):
             ## Final Return to display Tree Map Graph with headers ##
             return_children = [
 
-                html.H3(f"{selected_viz}: {selected_airport}", id='airports-graph-header'),
+                html.H2(f"{selected_viz}", id='airports-graph-header', style={'marginBottom': '0.1em'}),
+                html.P(f'({selected_airport})', id='airports-graph-subheader', style={'marginBottom': '0.2em'}, className='text-muted'),
                 html.Hr(className='my-2'),
-                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}),
 
                 dbc.Row([
 
@@ -419,7 +422,7 @@ def select_airport_visual(selected_viz, selected_airport):
 
                 dbc.Row([
 
-                    dcc.Graph(figure=tree_figure, style={'minHeight': '42vh'})
+                    dcc.Graph(figure=tree_figure, style={'minHeight': '40vh'})
 
                     
 
@@ -428,6 +431,162 @@ def select_airport_visual(selected_viz, selected_airport):
             ]
 
             return return_children
+        
+    elif selected_viz == 'Airport Monthly Passengers & Flights':
+
+        months_text = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+        airport_visual_desc = '2 Stacked Barcharts which display the amount of passenger traffic (Passengers and Flights carrying passengers) an airport handles throughout the year. Split on a monthly basis.'
+
+        if selected_airport is None or selected_airport.strip() == '':
+
+            airports_passenger_flights_query = """select b.[MONTH_NAME_SHORT] as [MONTH], a.[MONTH] as [MONTH NUM], a.[YEAR], 
+                SUM(CAST(a.[PASSENGERS] AS INT)) as [TOTAL PASSENGERS],
+                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) as [TOTAL FLIGHTS] 
+                from [T100_SEGMENT_ALL_CARRIER_2023] a
+                left join [MONTHS_LOOKUP] b
+                on a.[MONTH] = b.[MONTH]
+                WHERE CAST(a.[PASSENGERS] AS INT) > 0 
+                AND CAST(a.[DEPARTURES_PERFORMED] AS INT) > 0
+                GROUP BY b.[MONTH_NAME_SHORT], a.[MONTH], a.[YEAR]
+                order by CAST(a.[MONTH] as int) asc
+            """
+
+            airports_polars = pl.read_database_uri(query=airports_passenger_flights_query, uri=sqlite_path, engine='adbc')
+
+            line_figure_passengers = px.line(airports_polars, x='MONTH', y='TOTAL PASSENGERS',
+                                                 markers=True, line_shape='spline',
+                                                 category_orders={'MONTH': months_text},
+                                                 color_discrete_sequence=['#0B2838'])
+            
+            line_figure_flights = px.line(airports_polars, x='MONTH', y='TOTAL FLIGHTS',
+                                          markers=True, line_shape='spline',
+                                          category_orders={'MONTH': months_text},
+                                          color_discrete_sequence=['#E89C31'])
+            
+            line_figure_flights.update_xaxes(type='category')
+
+            line_figure_flights.update_traces(yaxis ="y2", showlegend=True, name='Total Flights')
+
+            line_figure_passengers.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            line_figure_passengers.update_traces(showlegend=True, name='Total Passengers')
+            
+            line_figure_passengers.add_traces(list(line_figure_flights.select_traces())).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "normal", "title": "Total Flights"},
+                                                                                                       yaxis1={'rangemode': 'normal', 'title': 'Total Passengers'})
+            
+            line_figure_passengers.update_xaxes(type='category', categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(180, 180, 180)')
+
+            line_figure_passengers.update_layout(legend={
+                'orientation':'h',
+                'yanchor':"bottom",
+                'y':1.02,
+                'xanchor': 'center',
+                'x': 0.5}, 
+                legend_title_text = '<b>US Passenger & Flight Traffic</b>',
+                xaxis_title=None,
+                yaxis_tickfont={'size': 10},
+                margin={'l':10, 'r': 10, 't': 10, 'b': 10},
+                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
+                hovermode='closest')
+            
+            ## Update secondary y axis ticks ##
+            line_figure_passengers.update_layout(yaxis2={"tickmode": 'sync', 'tickfont': {'size': 10}}, hovermode='x unified')
+
+            ## Update Traces for hover template ##
+            line_figure_passengers.update_traces(hovertemplate="%{y:.3s}")
+
+
+            return_children = [
+
+                html.H2(f"{selected_viz}", id='airports-graph-header', style={'marginBottom': '0.1em'}),
+                html.P(f'(All Airports in United States)', id='airports-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
+                html.Hr(className='my-2'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}),
+
+                dcc.Graph(id='airports-graph', style={'height':'52vh'}, figure=line_figure_passengers)
+
+            ]
+
+            return return_children
+        
+        else:
+
+            airports_passenger_flights_query = f"""select * from T100_AIRPORT_ARRIVALS_DEPARTURES where [AIRPORT NAME] = '{selected_airport.replace("'", "''")}'"""
+
+            airports_polars = pl.read_database_uri(query=airports_passenger_flights_query, uri=sqlite_path, engine='adbc')
+
+            ## Bar Figure Setup for Passengers ##
+            bar_figure_passengers = px.bar(airports_polars, x='MONTH', y=['ARRIVING PASSENGERS', 'DEPARTING PASSENGERS'],
+                                           color_discrete_map={'ARRIVING PASSENGERS': '#0B2838', 'DEPARTING PASSENGERS': '#62B3E0'},
+                                           text_auto='0.3s')
+            
+            bar_figure_passengers.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            bar_figure_passengers.update_layout(legend={
+                'orientation':'h',
+                'yanchor':"bottom",
+                'y':1.02,
+                'xanchor': 'center',
+                'x': 0.5}, 
+                legend_title_text = '<b>Total Passenger Traffic</b>',
+                xaxis_title=None,
+                yaxis_title="Total Passengers",
+                yaxis_tickfont={'size': 10},
+                margin={'l':10, 'r': 10, 't': 10, 'b': 10},
+                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
+                hovermode='closest')
+            
+            ## Using <extra></extra> to get rid of secondary hovertemplate window ##
+            bar_figure_passengers.update_traces(textfont_size=10, marker={'cornerradius': 5}, hovertemplate="""<b>%{x}</b><br><br><b>%{data.name}</b>: %{y:.3s}<br><extra></extra>""")
+
+            bar_figure_passengers.update_xaxes(categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(180, 180, 180)')
+
+            ## Bar Figure Setup for Flights ##
+
+            bar_figure_flights = px.bar(airports_polars, x='MONTH', y=['ARRIVING FLIGHTS', 'DEPARTING FLIGHTS'],
+                                           color_discrete_map={'ARRIVING FLIGHTS': '#E89C31', 'DEPARTING FLIGHTS': '#F2C689'},
+                                           text_auto='0.3s')
+            
+            bar_figure_flights.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            bar_figure_flights.update_layout(legend={
+                'orientation':'h',
+                'yanchor':"bottom",
+                'y':1.02,
+                'xanchor': 'center',
+                'x': 0.5}, 
+                legend_title_text = '<b>Total Flight Traffic</b>',
+                xaxis_title=None,
+                yaxis_title="Total Flights",
+                yaxis_tickfont={'size': 10},
+                
+                margin={'l':10, 'r': 10, 't': 10, 'b': 10},
+                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
+                hovermode='closest')
+            
+            bar_figure_flights.update_traces(textfont_size=10, marker={"cornerradius":5}, hovertemplate="""<b>%{x}</b><br><br><b>%{data.name}</b>: %{y:.3s}<br><extra></extra>""")
+
+            bar_figure_flights.update_xaxes(categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(180, 180, 180)')
+
+
+            ## Return div contents for the callback ##
+            return_children = [
+
+                html.H2(f"{selected_viz}", id='airports-graph-header', style={'marginBottom': '0.1em'}),
+                html.P(f'({selected_airport})', id='airports-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
+                html.Hr(className='my-2'),
+                html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}),
+
+                dcc.Graph(id='airports-graph', style={'height':'26vh'}, figure=bar_figure_passengers),
+
+                dcc.Graph(id='airports-graph-2', style={'height': '26vh'}, figure=bar_figure_flights)
+
+            ]
+
+            return return_children
+
+        
 
 
 

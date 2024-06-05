@@ -1,11 +1,8 @@
-import polars as pl
 from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly_express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
-import dash
 
 
 def navbar_named(page_name):
@@ -26,15 +23,16 @@ def navbar_named(page_name):
 
             dbc.Nav([
 
-                dbc.NavItem(dbc.NavLink(f"{named_navbar}", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill')),
                 dbc.DropdownMenu([
 
-                    dbc.DropdownMenuItem('Home', href='/'),
-                    dbc.DropdownMenuItem("Person Analytics", href='/PassengerAnalytics'),
-                    dbc.DropdownMenuItem('Airport Analytics', href='/AirportAnalytics'),
-                    dbc.DropdownMenuItem('Route Analytics'),
-                    dbc.DropdownMenuItem('Flight Delay Analytics')
-                ], nav=True, label='Page Navigation', color="secondary", menu_variant="dark")
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-house-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}),'Home']), href='/'),
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-people-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Person Analytics"]), href='/PassengerAnalytics'),
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-buildings-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Airport Analytics"]), href='/AirportAnalytics'),
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-geo-alt-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Route Analytics"])),
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-hourglass-split', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Flight Delay Analytics"]))
+
+                ], in_navbar=True, nav=True, label='Page Navigation', color="secondary", menu_variant="dark", align_end=True),
+                dbc.NavItem(dbc.NavLink(f"{named_navbar}", active=True, style={'font-size': 'x-small'},class_name='nav-header-desc-pill'))
                 
             ], navbar=True, style={'alignItems': 'center'}, horizontal='end', class_name='navbar-top')
 
@@ -42,7 +40,7 @@ def navbar_named(page_name):
 
         
 
-    ], class_name='m-0 mw-100', fluid="md"),dark=True, color='dark', class_name='p-2 w-95vw mb-2'
+    ], class_name='m-0 mw-100', fluid=False),dark=True, color='dark', class_name='p-2 w-95vw mb-2'
 )
 
     return navbar

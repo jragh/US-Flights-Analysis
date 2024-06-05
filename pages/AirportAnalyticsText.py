@@ -43,7 +43,14 @@ def airport_text():
                     html.Small("""Provides Cards with Summary Statisitcs, along with a Treemap based on Carriers and Passengers Transported.
                                Includes Passengers Transported, Departed Flights, Total Carriers, and Total Destinations.""", className='text-muted')
 
-                ], title="Airport Summary Treemap", style={'width': "100%"}, item_id='airports-item-2')
+                ], title="Airport Summary Treemap", style={'width': "100%"}, item_id='airports-item-2'),
+
+                dbc.AccordionItem([
+
+                    html.Small("""Displays Total Passengers & Flights (Arriving & Departing) for a given airport, split by month. 
+                               Only counts flights carrying at least 1 passenger.""", className='text-muted')
+
+                ], title="Airport Monthly Passengers & Flights", style={'width': "100%"}, item_id='airports-item-3')
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='airport-viz-accordion', active_item='airports-item-2')
 
