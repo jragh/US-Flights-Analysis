@@ -1,5 +1,5 @@
 import polars as pl
-from dash import html, dcc, Input, Output, State, callback
+from dash import html, dcc, Input, Output, State, callback, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
 
@@ -8,6 +8,8 @@ import dash
 from .flightsNavbar import navbar_named
 from .AirportAnalyticsText import airport_text
 from .Airports_Analysis_Cards import generateSummaryCard
+
+from .Generate_Top_Airports import generateAirportsTopTen
 
 dash.register_page(__name__, path='/AirportAnalytics')
 
@@ -31,7 +33,7 @@ ORDER BY b.[DESCRIPTION] ASC;"""
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
-airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap', 'Airport Monthly Passengers & Flights']
+airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap', 'Airport Monthly Passengers & Flights', 'Top 10 Sources and Destinations By Airport']
 
 
 layout = html.Div([dbc.Container([
@@ -585,6 +587,10 @@ def select_airport_visual(selected_viz, selected_airport):
             ]
 
             return return_children
+        
+    elif selected_viz == 'Top 10 Sources and Destinations By Airport':
+
+        return generateAirportsTopTen(selected_viz=selected_viz, selected_airport=selected_airport, sqlite_path=sqlite_path)
 
         
 
@@ -605,3 +611,23 @@ def update_airport_accordion(selected_viz):
         return "airports-item-2"
 
 
+
+@callback(
+    Output(component_id='airport-ap-selection', component_property='clearable'),
+    Output(component_id='airport-ap-selection', component_property='value'),
+    [Input(component_id='airport-viz-selection', component_property='value')],
+    State(component_id='airport-ap-selection', component_property='value')
+)
+def handleClearableAirportSelection(selected_viz, selected_airport):
+
+    if (selected_airport is None or selected_airport.strip() == '') and selected_viz == 'Top 10 Sources and Destinations By Airport':
+
+        return False, 'New York, NY: John F. Kennedy International'
+    
+    elif selected_viz == 'Top 10 Sources and Destinations By Airport' and (selected_airport is not None and selected_airport.strip() != ''):
+
+        return False, no_update
+    
+    else:
+
+        return True, no_update
