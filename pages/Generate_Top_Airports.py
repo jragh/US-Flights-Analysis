@@ -15,68 +15,65 @@ def generateAirportsTopTen(selected_viz, selected_airport, sqlite_path):
 
     airports_passenger_flights_query = f"""
 
-        with a as(
-        select DEST_AIRPORT_ID,
-        DEST_AIRPORT_NAME,
-        ORIGIN_AIRPORT_ID, 
-        ORIGIN_AIRPORT_NAME,
-        SUM(CAST([PASSENGERS] as int)) as [ARRIVING PASSENGERS]
-        from [T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP]
-        where CAST([Passengers] as INT) > 0 
-        and CAST([DEPARTURES_PERFORMED] AS int) > 0
+        with origins as (
+
+        select [ORIGIN_AIRPORT_NAME],
+        SUM(CAST([PASSENGERS] AS INT)) as [TOTAL ORIGIN PASSENGERS]
+        from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+        where CAST([PASSENGERS] as int) > 0 
+        and CAST([DEPARTURES_PERFORMED] as int) > 0
         and [DEST_AIRPORT_NAME] = '{selected_airport}'
-        group by DEST_AIRPORT_ID, DEST_AIRPORT_NAME, ORIGIN_AIRPORT_ID, ORIGIN_AIRPORT_NAME
+        group by [ORIGIN_AIRPORT_NAME]),
+
+        destinations as (
+        
+        select [DEST_AIRPORT_NAME],
+        SUM(CAST([PASSENGERS] AS INT)) as [TOTAL DEST PASSENGERS]
+        from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+        where CAST([PASSENGERS] as int) > 0 
+        and CAST([DEPARTURES_PERFORMED] as int) > 0
+        and [ORIGIN_AIRPORT_NAME] = '{selected_airport}'
+        group by [DEST_AIRPORT_NAME]
+
         ),
 
-        totals as (
-        select a.[DEST_AIRPORT_ID], 
-        a.[DEST_AIRPORT_NAME], 
-        a.[ORIGIN_AIRPORT_ID], 
-        a.[ORIGIN_AIRPORT_NAME],
-        a.[ARRIVING PASSENGERS],
-        ROW_NUMBER () over (partition by a.[DEST_AIRPORT_ID] order by a.[ARRIVING PASSENGERS] DESC) as [ORIGIN AIRPORT RANKING]
-        from a),
-
-        carrier_dump as (
+        window as (
         
-        select DEST_AIRPORT_ID, 
-        ORIGIN_AIRPORT_ID,
-        UNIQUE_CARRIER_NAME, 
-        SUM(CAST([PASSENGERS] AS INT)) as [CARRIER TOTAL PASSENGERS]
-        from [T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP] x
+        select COALESCE(o.[ORIGIN_AIRPORT_NAME], d.[DEST_AIRPORT_NAME]) as [AIRPORT NAME],
+        COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) as [TOTAL ORIGIN PASSENGERS],
+        COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0) as [TOTAL DEST PASSENGERS],
+        (COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) as [TOTAL PASSENGERS],
 
-        where CAST([Passengers] as INT) > 0 
-        and CAST([DEPARTURES_PERFORMED] AS int) > 0
-        and [DEST_AIRPORT_NAME] = '{selected_airport}'
-        group by DEST_AIRPORT_ID, ORIGIN_AIRPORT_ID, UNIQUE_CARRIER_NAME
-
-        )
+        ROW_NUMBER() OVER (order by (COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) desc) as [PASSENGER RANKING]
 
 
-        select t.[DEST_AIRPORT_NAME], 
-        t.[ORIGIN_AIRPORT_NAME], 
-        SUM(CAST(c.[CARRIER TOTAL PASSENGERS] AS INT)) as [TOTAL_PASSENGERS]
-        from totals t
-        inner join carrier_dump c
-        on t.DEST_AIRPORT_ID = c.DEST_AIRPORT_ID and t.ORIGIN_AIRPORT_ID = c.ORIGIN_AIRPORT_ID
-        where CAST(t.[ORIGIN AIRPORT RANKING] as INT) <= 10
+        from origins o
+        FULL OUTER JOIN destinations d
+        on o.[ORIGIN_AIRPORT_NAME] = d.[DEST_AIRPORT_NAME])
 
-        GROUP BY t.[DEST_AIRPORT_NAME], 
-        t.[ORIGIN_AIRPORT_NAME]
-
-        order by SUM(CAST(c.[CARRIER TOTAL PASSENGERS] AS INT)) desc
-        ;
+        select * from window
+        where [PASSENGER RANKING] <= 10
+        order by CAST([TOTAL PASSENGERS] as int) asc;
 
     """
 
     
     airports_polars = pl.read_database_uri(query=airports_passenger_flights_query, engine='adbc', uri=sqlite_path)
 
-    h_bar_figure = px.bar(airports_polars, x='TOTAL_PASSENGERS', y='ORIGIN_AIRPORT_NAME',text_auto='0.3s')
+    h_bar_figure = px.bar(airports_polars, x=['TOTAL ORIGIN PASSENGERS', 'TOTAL DEST PASSENGERS'], y='AIRPORT NAME',text_auto='0.3s',
+                          orientation='h', barmode='group')
 
-    h_bar_figure.update_traces(textfont_size=10, marker={"cornerradius":5})
+    h_bar_figure.update_traces(textfont_size=10, marker={"cornerradius":5}, textposition='inside', textangle=0)
     
-    h_bar_figure.update_layout(showlegend=False, yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 10})
+    h_bar_figure.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},
+                               plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
+                               legend={'font': {'size': 10}, 'orientation':'h'})
+
+    h_bar_figure.update_legends(yanchor="bottom", y=1.02, xanchor= 'right', x= 0.5, title=None)
+
+    h_bar_figure.update_yaxes(type='category', title=None)
+    
+    h_bar_figure.update_xaxes(title='Total Passengers')
 
     return_children = [
 
@@ -84,7 +81,7 @@ def generateAirportsTopTen(selected_viz, selected_airport, sqlite_path):
         html.P(f'({selected_airport})', id='airports-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
         html.Hr(className='my-2'),
         html.P(airport_visual_desc, className='mb-2 text-muted', id='airports-graph-desc', style={'fontSize': '0.85em'}), 
-        dcc.Graph(id='airports-graph', style={'height':'26vh'}, figure=h_bar_figure)
+        dcc.Graph(id='airports-graph', style={'minHeight':'52vh'}, figure=h_bar_figure)
 
     ]
 

@@ -16,7 +16,7 @@ on a.ORIGIN_AIRPORT_ID = c.[CODE];
 
 -- Solution joining in the Airport Lookup Table --
 -- TRY TO GET THIS QUERY UNDER 1.1 SECOND FOR PERFORMANCE --
-with a as(
+/*with a as(
 select DEST_AIRPORT_ID,
 DEST_AIRPORT_NAME,
 ORIGIN_AIRPORT_ID, 
@@ -53,16 +53,6 @@ group by DEST_AIRPORT_ID, ORIGIN_AIRPORT_ID, UNIQUE_CARRIER_NAME
 
 )
 
-
-/*select t.[DEST_AIRPORT_NAME], t.[ORIGIN_AIRPORT_NAME], t.[ARRIVING PASSENGERS],
-CASE WHEN (CAST([CARRIER TOTAL PASSENGERS] as FLOAT) / CAST([ARRIVING PASSENGERS] as float)) <= 0.05 then 'Other Carriers' else c.[UNIQUE_CARRIER_NAME] END as [UNIQUE CARRIER SIMPLIFIED],
-c.[UNIQUE_CARRIER_NAME],
-c.[CARRIER TOTAL PASSENGERS]
-from totals t
-inner join carrier_dump c
-on t.DEST_AIRPORT_ID = c.DEST_AIRPORT_ID and t.ORIGIN_AIRPORT_ID = c.ORIGIN_AIRPORT_ID
-where CAST(t.[ORIGIN AIRPORT RANKING] as INT) <= 10;*/
-
 select t.[DEST_AIRPORT_NAME], 
 t.[ORIGIN_AIRPORT_NAME], 
 SUM(CAST(c.[CARRIER TOTAL PASSENGERS] AS INT)) as [TOTAL_PASSENGERS]
@@ -76,3 +66,48 @@ t.[ORIGIN_AIRPORT_NAME]
 
 order by SUM(CAST(c.[CARRIER TOTAL PASSENGERS] AS INT)) desc
 ;
+
+
+
+---- New Attempt at providing top 10 connection airports ----
+---- Will be based on both arriving and departing connections ----
+---- WORKING CURRENT ----
+with origins as (
+
+select [ORIGIN_AIRPORT_NAME],
+SUM(CAST([PASSENGERS] AS INT)) as [TOTAL ORIGIN PASSENGERS]
+from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+where CAST([PASSENGERS] as int) > 0 
+and CAST([DEPARTURES_PERFORMED] as int) > 0
+and [DEST_AIRPORT_NAME] = 'Albuquerque, NM: Albuquerque International Sunport'
+group by [ORIGIN_AIRPORT_NAME]),
+
+destinations as (
+
+select [DEST_AIRPORT_NAME],
+SUM(CAST([PASSENGERS] AS INT)) as [TOTAL DEST PASSENGERS]
+from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+where CAST([PASSENGERS] as int) > 0 
+and CAST([DEPARTURES_PERFORMED] as int) > 0
+and [ORIGIN_AIRPORT_NAME] = 'Albuquerque, NM: Albuquerque International Sunport'
+group by [DEST_AIRPORT_NAME]
+
+),
+
+window as (
+
+select COALESCE(o.[ORIGIN_AIRPORT_NAME], d.[DEST_AIRPORT_NAME]) as [AIRPORT NAME],
+COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) as [TOTAL ORIGIN PASSENGERS],
+COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0) as [TOTAL DEST PASSENGERS],
+(COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) as [TOTAL PASSENGERS],
+
+ROW_NUMBER() OVER (order by (COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) desc) as [PASSENGER RANKING]
+
+
+from origins o
+FULL OUTER JOIN destinations d
+on o.[ORIGIN_AIRPORT_NAME] = d.[DEST_AIRPORT_NAME])
+
+select * from window
+where [PASSENGER RANKING] <= 10
+order by CAST([TOTAL PASSENGERS] as int) desc;
