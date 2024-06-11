@@ -50,11 +50,18 @@ def airport_text():
                     html.Small("""Displays Total Passengers & Flights (Arriving & Departing) for a given airport, split by month. 
                                Only counts flights carrying at least 1 passenger.""", className='text-muted')
 
-                ], title="Airport Monthly Passengers & Flights", style={'width': "100%"}, item_id='airports-item-3')
+                ], title="Airport Monthly Passengers & Flights", style={'width': "100%"}, item_id='airports-item-3'),
+
+                dbc.AccordionItem([
+
+                    html.Small("""Displays top 10 connected airported for the selected airport based on the total arriving and departing passengers.
+                               A specific airport must be selected (when switching to visual without any airport filter, an airport will automatically be selected).""", className='text-muted')
+
+                ], title='Top 10 Connected Airports By Passengers', style={'width': "100%"}, item_id='airports-item-4')
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='airport-viz-accordion', active_item='airports-item-2')
 
-        ], className='mt-3 w-100 d-flex flex-column justify-content-center overflow-y-scroll') 
+        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll') 
 
     ]
 

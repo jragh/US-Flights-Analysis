@@ -33,7 +33,7 @@ ORDER BY b.[DESCRIPTION] ASC;"""
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
-airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap', 'Airport Monthly Passengers & Flights', 'Top 10 Sources and Destinations By Airport']
+airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap', 'Airport Monthly Passengers & Flights', 'Top 10 Connected Airports By Passengers']
 
 
 layout = html.Div([dbc.Container([
@@ -588,7 +588,7 @@ def select_airport_visual(selected_viz, selected_airport):
 
             return return_children
         
-    elif selected_viz == 'Top 10 Sources and Destinations By Airport':
+    elif selected_viz == 'Top 10 Connected Airports By Passengers':
 
         return generateAirportsTopTen(selected_viz=selected_viz, selected_airport=selected_airport, sqlite_path=sqlite_path)
 
@@ -620,14 +620,37 @@ def update_airport_accordion(selected_viz):
 )
 def handleClearableAirportSelection(selected_viz, selected_airport):
 
-    if (selected_airport is None or selected_airport.strip() == '') and selected_viz == 'Top 10 Sources and Destinations By Airport':
+    if (selected_airport is None or selected_airport.strip() == '') and selected_viz == 'Top 10 Connected Airports By Passengers':
 
         return False, 'New York, NY: John F. Kennedy International'
     
-    elif selected_viz == 'Top 10 Sources and Destinations By Airport' and (selected_airport is not None and selected_airport.strip() != ''):
+    elif selected_viz == 'Top 10 Connected Airports By Passengers' and (selected_airport is not None and selected_airport.strip() != ''):
 
         return False, no_update
     
     else:
 
         return True, no_update
+    
+
+@callback(
+    Output(component_id='airport-viz-accordion', component_property='active_item'),
+    [Input(component_id='airport-viz-selection', component_property='value')]
+)
+def accordionActiveItemCallback(selected_viz):
+
+    if selected_viz == airports_visual_list[0]:
+
+        return 'airports-item-1'
+    
+    elif selected_viz == airports_visual_list[1]:
+
+        return 'airports-item-2'
+    
+    elif selected_viz == airports_visual_list[2]:
+
+        return 'airports-item-3'
+    
+    elif selected_viz == airports_visual_list[3]:
+
+        return 'airports-item-4'
