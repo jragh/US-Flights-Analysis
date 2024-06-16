@@ -9,6 +9,8 @@ import dash
 # from PassengerAnalyticsText import passengerText
 # from flightsNavbar import navbar_named
 
+from pages import flightsNavbar
+
 # sqlite_path = 'sqlite://US_Flights_Analytics.db'
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
@@ -34,9 +36,38 @@ dash.register_page(__name__, path='/')
 ## print(dash.page_registry.values())
 
 app.layout = dbc.Container([
-    html.Div([], style={'margin': '0'}),
+    dcc.Location(id='app-location-id'),
+    html.Div([
+
+        dbc.Row(id='app-navbar-row-output')
+
+    ], style={'margin': '0'}),
     dash.page_container
 ], class_name='m-0 g-0 w-100', id='PlsFix', fluid=True)
+
+
+## Callback for Global Navbar; Will update the pill based on that ##
+@app.callback(
+
+    Output(component_id='app-navbar-row-output', component_property='children'),
+    [Input(component_id='app-location-id', component_property='pathname')]
+    
+)
+def pathnameCallback(path):
+
+    pathname_pill_pair = {'/': 'Home', 
+                          '/PassengerAnalytics': 'Passenger Analytics', 
+                          '/AirportAnalytics' : 'Airport Analytics', 
+                          '/RouteAnalytics': 'Route Analytics'
+                          }
+
+    return_children = [
+        dbc.Col([
+            flightsNavbar.navbar_named(pathname_pill_pair[path])
+        ], width=12)
+        ]
+
+    return return_children
 
 
 # app.layout = dbc.Container([

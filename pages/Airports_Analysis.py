@@ -37,11 +37,7 @@ airports_visual_list = ["Routes vs Flights (Scatter)", 'Airport Summary Treemap'
 
 
 layout = html.Div([dbc.Container([
-    dbc.Row([
-        dbc.Col([
-            navbar_named('Airport Analytics')
-        ], width=12)
-    ]),
+    
     dbc.Row([
 
         dbc.Col(children = textResults,

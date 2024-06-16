@@ -28,11 +28,7 @@ carrier_filter_list = sorted([val['UNIQUE_CARRIER_NAME'] for val in analytics_df
 textResults = passengerText()
 
 layout = dbc.Container([
-    dbc.Row([
-        dbc.Col([
-            navbar_named('Passenger Analytics')
-        ], width=12)
-    ]),
+    
     dbc.Row([
 
         dbc.Col(children = textResults,
