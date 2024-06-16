@@ -25,7 +25,7 @@ def navbar_named(page_name):
 
                 dbc.DropdownMenu([
 
-                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-house-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}),'Home']), href='/'),
+                    dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-house-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}),'Home']), href='/Home'),
                     dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-people-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Person Analytics"]), href='/PassengerAnalytics'),
                     dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-buildings-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Airport Analytics"]), href='/AirportAnalytics'),
                     dbc.DropdownMenuItem(html.Span([html.I(className='bi bi-geo-alt-fill', style={'marginRight': '0.5em', 'fontSize': '1.25em'}), "Route Analytics"]), href='/RouteAnalytics'),

@@ -30,7 +30,7 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True, suppress_callback_exceptions=True)
 
-dash.register_page(__name__, path='/')
+## dash.register_page(__name__, path='/')
 
 ## Debugging for page registry ##
 ## print(dash.page_registry.values())
@@ -55,7 +55,7 @@ app.layout = dbc.Container([
 )
 def pathnameCallback(path):
 
-    pathname_pill_pair = {'/': 'Home', 
+    pathname_pill_pair = {'/Home': 'Home', 
                           '/PassengerAnalytics': 'Passenger Analytics', 
                           '/AirportAnalytics' : 'Airport Analytics', 
                           '/RouteAnalytics': 'Route Analytics'

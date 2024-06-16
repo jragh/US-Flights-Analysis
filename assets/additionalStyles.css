@@ -106,6 +106,17 @@
 
 }
 
-.navbar-nav .dropdown-menu {
-    position: absolute;
+
+.home-page-row-banner {
+
+    min-height: 50vh;
+    background-image: URL("Icon\ Grid.svg");
+    background-size: cover;
+
+}
+
+.home-page-title-text-box {
+
+    box-shadow: 2px 2px 30px 18px #F2DCE1;
+
 }
