@@ -109,7 +109,7 @@
 
 .home-page-row-banner {
 
-    min-height: 50vh;
+    min-height: 22rem;
     background-image: URL("Icon\ Grid.svg");
     background-size: cover;
 
@@ -117,6 +117,26 @@
 
 .home-page-title-text-box {
 
-    box-shadow: 2px 2px 30px 18px #F2DCE1;
+
+    background-color: #0B2838;
+    border-radius: 10px;
+    padding: 1em 3em;
+
+}
+
+.home-banner-title-text {
+
+    font-size: x-large;
+    color: #E89C31;
+    font-size: 3em;
+    font-weight: 900;
+
+}
+
+.home-page-example-animate-box {
+
+    background-color: #0b2838;
+    height: 80%;
+
 
 }
