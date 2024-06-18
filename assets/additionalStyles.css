@@ -61,7 +61,7 @@
 .title-animate {
 
     position: relative;
-    animation: fadeIn 1.25s ease-in-out, upwardMove 1s ease-in-out;
+    animation: fadeIn 1s ease-in-out, upwardMove .8s ease-in-out;
 
 }
 
@@ -109,7 +109,7 @@
 
 .home-page-row-banner {
 
-    min-height: 22rem;
+    min-height: 25rem;
     background-image: URL("Icon\ Grid.svg");
     background-size: cover;
 
@@ -118,9 +118,10 @@
 .home-page-title-text-box {
 
 
-    background-color: #0B2838;
+    background-color: rgba(33, 37, 41, 1);
     border-radius: 10px;
-    padding: 1em 3em;
+    padding: 1.5em 3em 1em 3em;
+    margin-top: 2em;
 
 }
 
@@ -129,14 +130,40 @@
     font-size: x-large;
     color: #E89C31;
     font-size: 3em;
-    font-weight: 900;
-
+    font-weight: 800;
 }
 
 .home-page-example-animate-box {
 
-    background-color: #0b2838;
-    height: 80%;
-
+    background-color: rgba(33, 37, 41, 1);
+    min-height: 80%;
+    margin-top: 2em;
+    margin-bottom: 1em;
 
 }
+
+
+.home-banner-title-italics {
+    display: inline-block;
+    background-color: #E89C31;
+    justify-content: center;
+    width: fit-content;
+    align-items: center;
+    text-align: left;
+    font-style: italic;
+    transform: skew(-15deg);
+
+    margin-bottom: 1.5em;
+    
+ }
+ 
+ .home-banner-title-italics h1 {
+    color: rgba(33, 37, 41, 1);
+    margin-top: 4px;
+    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-left: 2px;
+    transform: skew(15deg);
+    font-size: 3em;
+    font-weight: 800;
+ }
