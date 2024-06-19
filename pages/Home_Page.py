@@ -35,7 +35,47 @@ layout = html.Div([
                             html.Small('''Explore this Web app to discover key data relating to US passenger flights.
                                    Available themes in the app include Passenger, Airport, Carrier, Flight Route, and Flight Delay Data.
                                    See below for an example on the type of information you can explore: ''', className='mb-2', id='airports-graph-desc',
-                                   style={'color': 'rgb(199, 199, 200)'})
+                                   style={'color': 'rgb(199, 199, 200)'}),
+
+                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='my-3'),
+
+                            html.Span([
+
+                                html.H6([
+                                    html.Span('#1: LONDON, UK (LHR) AND NEW YORK, NY (JFK)', className='example_head_1'),
+
+                                    html.Span('#2: ATLANTA, GA (ATL) AND ORLANDO, FL (MCO)', className='example_head_2'),
+
+                                    html.Span('#3: LOS ANGELES, CA (LAX) AND NEW YORK, NY (JFK)', className='example_head_3'),
+
+                                    html.Span('#4: LAS VEGAS, NV (LAS) AND LOS ANGELES, CA (LAX)', className='example_head_4'),
+
+                                    html.Span('#5: LOS ANGELES, CA (LAX) AND SAN FRANCISCO, CA (SFO)', className='example_head_5')
+                            ], className='m-0')
+
+                            ], className='busy-trips-header-home-page'),
+
+                            html.Div(style={'height': '1.5em'}),
+
+
+                            html.Span([
+
+                                html.H6([
+
+                                    html.Span('Passengers: 2 987 159, Flights: 14 634, Servicing Carriers: 5', className='example_head_stats_1'),
+
+                                    html.Span('#2: ATLANTA, GA (ATL) AND ORLANDO, FL (MCO)', className='example_head_stats_2'),
+
+                                    html.Span('#3: LOS ANGELES, CA (LAX) AND NEW YORK, NY (JFK)', className='example_head_stats_3'),
+
+                                    html.Span('#4: LAS VEGAS, NV (LAS) AND LOS ANGELES, CA (LAX)', className='example_head_stats_4'),
+
+                                    html.Span('#5: LOS ANGELES, CA (LAX) AND SAN FRANCISCO, CA (SFO)', className='example_head_stats_5')
+
+                                ])
+
+                            ], className='busy-trips-header-home-page-stats')
+                            
 
                     ], className='p-4 rounded-3 home-page-example-animate-box flex-fill', id='home-visual-div')
 

@@ -167,3 +167,233 @@
     font-size: 3em;
     font-weight: 800;
  }
+
+
+
+/* Setting up Animation for Home Page */
+
+.example_head_1 {
+    animation: examplehead1;
+}
+
+.example_head_2 {
+    animation: examplehead2;
+}
+
+.example_head_3 {
+    animation: examplehead3;
+}
+
+.example_head_4 {
+    animation: examplehead4;
+}
+
+.example_head_5 {
+    animation: examplehead5;
+}
+
+
+.example_head_stats_1 {
+    animation: headstats1;
+}
+
+.example_head_stats_2 {
+    animation: headstats2;
+}
+
+.example_head_stats_3 {
+    animation: headstats3;
+}
+
+.example_head_stats_4 {
+    animation: headstats4;
+}
+
+.example_head_stats_5 {
+    animation: headstats5;
+}
+
+
+.example_head_1, .example_head_2, .example_head_3, .example_head_4, .example_head_5, .example_head_stats_1, .example_head_stats_2, .example_head_stats_3, .example_head_stats_4, .example_head_stats_5{
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    position: relative;
+    animation-duration: 55s;
+    animation-timing-function: steps(35, end);
+    animation-iteration-count: infinite;
+  }
+
+
+@keyframes examplehead1 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    3%, 17% {
+        width: 24em;
+    }
+
+}
+
+@keyframes examplehead2 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    23%, 37% {
+        width: 24em;
+    }
+
+}
+
+@keyframes examplehead3 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    43%, 57% {
+        width: 27em;
+    }
+
+}
+
+@keyframes examplehead4 {
+
+    0%, 20%, 40%, 60%, 80%, 100%  {
+        width: 0;
+    }
+
+    63%, 77% {
+        width: 27em;
+    }
+
+}
+
+@keyframes examplehead5 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    83%, 97% {
+        width: 30em;
+    }
+
+}
+
+
+.busy-trips-header-home-page {
+
+    background-color: #E89C31;
+    width: max-content;
+    text-align: center;
+    align-items: center;
+    display: inline-block;
+    height: max-content;
+    transform: skew(-15deg);
+    font-style: italic;
+
+}
+
+.busy-trips-header-home-page h6{
+
+    color: rgba(33, 37, 41, 1);
+    margin-top: 2px !important;
+    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-left: 2px;
+    transform: skew(15deg);
+
+}
+
+.busy-trips-header-home-page-stats {
+
+    background-color: #7CC6FE;
+    width: max-content;
+    text-align: center;
+    align-items: center;
+    display: inline-block;
+    height: max-content;
+    transform: skew(-15deg);
+    font-style: italic;
+
+}
+
+.busy-trips-header-home-page-stats h6{
+
+    color: rgba(33, 37, 41, 1);
+    margin-top: 2px !important;
+    margin-bottom: 2px;
+    margin-right: 8px;
+    margin-left: 2px;
+    transform: skew(15deg);
+    font-size: 1.15em;
+
+}
+
+
+
+
+@keyframes headstats1 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    3%, 17% {
+        width: 29em;
+    }
+
+}
+
+@keyframes headstats2 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    23%, 37% {
+        width: 24em;
+    }
+
+}
+
+@keyframes headstats3 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    43%, 57% {
+        width: 27em;
+    }
+
+}
+
+@keyframes headstats4 {
+
+    0%, 20%, 40%, 60%, 80%, 100%  {
+        width: 0;
+    }
+
+    63%, 77% {
+        width: 27em;
+    }
+
+}
+
+@keyframes headstats5 {
+
+    0%, 20%, 40%, 60%, 80%, 100% {
+        width: 0;
+    }
+
+    83%, 97% {
+        width: 30em;
+    }
+
+}
