@@ -30,7 +30,7 @@ layout = html.Div([
 
                         html.Div([
 
-                            html.H2('An Analytics App on USA Flights Data', id='home-page-header', style={'color': 'rgb(199, 199, 200)'}),
+                            html.H2('An Analytics App on USA Flights Data', id='home-page-header', style={'color': '#E89C31'}),
                             html.Hr(className='my-2'),
                             html.Small('''Explore this Web app to discover key data relating to US passenger flights.
                                    Available themes in the app include Passenger, Airport, Carrier, Flight Route, and Flight Delay Data.
@@ -64,13 +64,13 @@ layout = html.Div([
 
                                     html.Span('Passengers: 2 987 159, Flights: 14 634, Servicing Carriers: 5', className='example_head_stats_1'),
 
-                                    html.Span('#2: ATLANTA, GA (ATL) AND ORLANDO, FL (MCO)', className='example_head_stats_2'),
+                                    html.Span('Passengers: 2 952 159, Flights: 18 009, Servicing Carriers: 7', className='example_head_stats_2'),
 
-                                    html.Span('#3: LOS ANGELES, CA (LAX) AND NEW YORK, NY (JFK)', className='example_head_stats_3'),
+                                    html.Span('Passengers: 2 812 807, Flights: 19 935, Servicing Carriers: 5', className='example_head_stats_3'),
 
-                                    html.Span('#4: LAS VEGAS, NV (LAS) AND LOS ANGELES, CA (LAX)', className='example_head_stats_4'),
+                                    html.Span('Passengers: 2 727 943, Flights: 22 440, Servicing Carriers: 20', className='example_head_stats_4'),
 
-                                    html.Span('#5: LOS ANGELES, CA (LAX) AND SAN FRANCISCO, CA (SFO)', className='example_head_stats_5')
+                                    html.Span('Passengers: 2 709 771, Flights: 23 368, Servicing Carriers: 13', className='example_head_stats_5')
 
                                 ])
 
@@ -86,7 +86,37 @@ layout = html.Div([
 
             ], width=12, className='home-banner-main-column')
 
-        ])
+        ]),
+
+        dbc.Row([
+
+            dbc.Col([
+
+                html.Span([html.I(className='bi bi-people-fill home-page-info-img')]),
+                html.H5('Passengers'),
+                html.P('Highlights trends in passenger airline travel across the USA. Analyze by Carrier, Seat utilization, and other metrics!')
+
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
+
+            dbc.Col([
+
+                html.Span([html.I(className='bi bi-buildings-fill home-page-info-img')])
+
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
+
+            dbc.Col([
+
+                html.Span([html.I(className='bi bi-geo-alt-fill home-page-info-img')])
+
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
+
+            dbc.Col([
+
+                html.Span([html.I(className='bi bi-hourglass-split home-page-info-img')])
+
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col')
+
+        ], justify='evenly', className='my-4')
 
     ], fluid=True)
 
