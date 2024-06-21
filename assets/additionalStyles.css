@@ -409,6 +409,24 @@
     text-align: center;
     flex-direction: column;
 
+    transition: transform .5s ease-in-out;
+
+}
+
+.home-page-info-col:hover {
+
+    transform: scale(1.075);
+
+}
+
+.home-page-info-col small {
+
+    color: rgba(33, 37, 41, 1)
+}
+
+.home-page-info-col h5 {
+
+    color: rgba(33, 37, 41, 1)
 }
 
 .home-page-info-img {

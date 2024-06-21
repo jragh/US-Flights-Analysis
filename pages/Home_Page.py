@@ -92,29 +92,35 @@ layout = html.Div([
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-people-fill home-page-info-img')]),
+                html.Span([html.I(className='bi bi-people-fill home-page-info-img')], className='mb-3'),
                 html.H5('Passengers'),
-                html.P('Highlights trends in passenger airline travel across the USA. Analyze by Carrier, Seat utilization, and other metrics!')
+                html.Small('Highlights trends in passenger airline travel across the USA. Analyze by Carrier, Seat utilization, and other metrics!')
 
-            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
-
-            dbc.Col([
-
-                html.Span([html.I(className='bi bi-buildings-fill home-page-info-img')])
-
-            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col mt-3'),
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-geo-alt-fill home-page-info-img')])
+                html.Span([html.I(className='bi bi-buildings-fill home-page-info-img')], className='mb-3'),
+                html.H5('Airports'),
+                html.Small('Discover key highlights in airline travel at the airport level. Analyze by Carriers, Passengers, Flights and Destinations!')
 
-            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col'),
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col mt-3'),
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-hourglass-split home-page-info-img')])
+                html.Span([html.I(className='bi bi-geo-alt-fill home-page-info-img')], className='mb-3'),
+                html.H5('Routes'),
+                html.Small('Analyze Origin-Destination pairings with associated attributes such as Ticket Pricing, Passenger Counts, Carrier information, and more!')
 
-            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col')
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col mt-3'),
+
+            dbc.Col([
+
+                html.Span([html.I(className='bi bi-hourglass-split home-page-info-img')], className='mb-3'),
+                html.H5('Flight Delays'),
+                html.Small('Investigate Flight Delay dynamics among a variety of dimensions including Carriers, Airports, Aircraft, and Routes!')
+
+            ], width=12, xs=12, sm=6, md=3, lg=2, xl=2, xxl=2, className='home-page-info-col mt-3')
 
         ], justify='evenly', className='my-4')
 
