@@ -92,7 +92,7 @@ layout = html.Div([
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-people-fill home-page-info-img')], className='mb-3'),
+                html.A(html.Span([html.I(className='bi bi-people-fill home-page-info-img')], className='mb-3'), href='/PassengerAnalytics'),
                 html.H5('Passengers'),
                 html.Small('Highlights trends in passenger airline travel across the USA. Analyze by Carrier, Seat utilization, and other metrics!')
 
@@ -100,7 +100,7 @@ layout = html.Div([
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-buildings-fill home-page-info-img')], className='mb-3'),
+                html.A(html.Span([html.I(className='bi bi-buildings-fill home-page-info-img')], className='mb-3'), href='/AirportAnalytics'),
                 html.H5('Airports'),
                 html.Small('Discover key highlights in airline travel at the airport level. Analyze by Carriers, Passengers, Flights and Destinations!')
 
@@ -108,7 +108,7 @@ layout = html.Div([
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-geo-alt-fill home-page-info-img')], className='mb-3'),
+                html.A(html.Span([html.I(className='bi bi-geo-alt-fill home-page-info-img')], className='mb-3'), href='/RouteAnalytics'),
                 html.H5('Routes'),
                 html.Small('Analyze Origin-Destination pairings with associated attributes such as Ticket Pricing, Passenger Counts, Carrier information, and more!')
 
