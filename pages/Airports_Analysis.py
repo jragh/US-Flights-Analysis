@@ -5,7 +5,6 @@ import plotly_express as px
 
 import dash
 
-from .flightsNavbar import navbar_named
 from .AirportAnalyticsText import airport_text
 from .Airports_Analysis_Cards import generateSummaryCard
 

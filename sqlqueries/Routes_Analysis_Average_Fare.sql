@@ -1,0 +1,49 @@
+-- Account for Average 
+CREATE TABLE T100_SEGMENT_ALL_CARRIER_2023_FARES AS 
+
+with fare_pairs as (
+SELECT CITYMARKETID_1, CITYMARKETID_2,
+AVG(CAST(FARE AS FLOAT)) as AVERAGE_FARE
+FROM US_AIRFARE_CITY_PAIRS_2023
+GROUP BY CITYMARKETID_1, CITYMARKETID_2),
+
+a as  (
+select [ORIGIN_CITY_MARKET_ID] MARKET_ID, ORIGIN_AIRPORT_ID AIRPORT_ID, [origin] AIRPORT_CODE, ORIGIN_CITY_NAME CITY_NAME 
+from T100_CITY_MARKETID_LOOKUP
+UNION
+select [DEST_CITY_MARKET_ID] MARKET_ID, DEST_AIRPORT_ID AIRPORT_ID, [DEST] AIRPORT_CODE, DEST_CITY_NAME CITY_NAME
+from T100_CITY_MARKETID_LOOKUP),
+
+final_lookup as (
+
+select b.CITYMARKETID_1, a.AIRPORT_ID AIRPORT_ID_1, a.AIRPORT_CODE AIRPORT_CODE_1,
+b.CITYMARKETID_2, c.AIRPORT_ID AIRPORT_ID_2, c.AIRPORT_CODE AIRPORT_CODE_2,
+b.AVERAGE_FARE
+
+from fare_pairs b
+left join a
+on b.citymarketid_1 = a.MARKET_ID
+
+left join a as c
+on b.citymarketid_2 = c.MARKET_ID)
+
+-- Will need to take the above query, and then do a double join against the T100 table
+-- Check for both directions, and then take the non null side
+-- Potentially do a union with this 
+-- Also add in case statement for quarter based on month and year
+select t.*, fl.AVERAGE_FARE from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP t
+INNER join final_lookup fl
+on t.ORIGIN_AIRPORT_ID = fl.AIRPORT_ID_1 AND T.ORIGIN = fl.AIRPORT_CODE_1
+AND t.DEST_AIRPORT_ID = fl.AIRPORT_ID_2 AND T.DEST = fl.AIRPORT_CODE_2
+where cast(t.DEPARTURES_PERFORMED as int) > 0 and CAST(T.PASSENGERS AS INT) > 0
+
+UNION
+
+select t.*, fl.AVERAGE_FARE from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP t
+INNER join final_lookup fl
+on t.ORIGIN_AIRPORT_ID = fl.AIRPORT_ID_2 AND T.ORIGIN = fl.AIRPORT_CODE_2
+AND t.DEST_AIRPORT_ID = fl.AIRPORT_ID_1 AND T.DEST = fl.AIRPORT_CODE_1
+where cast(t.DEPARTURES_PERFORMED as int) > 0 and CAST(T.PASSENGERS AS INT) > 0;
+
+
+
