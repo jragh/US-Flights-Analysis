@@ -46,4 +46,48 @@ AND t.DEST_AIRPORT_ID = fl.AIRPORT_ID_1 AND T.DEST = fl.AIRPORT_CODE_1
 where cast(t.DEPARTURES_PERFORMED as int) > 0 and CAST(T.PASSENGERS AS INT) > 0;
 
 
+---- Query Below for Assessing Revenue By Carrier for Airport Pairs ----
+---- Replace Denver and St Louis with Selected Airport 1 & Selected Airport 2 ----
+with cte as (
 
+select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
+where ORIGIN_AIRPORT_NAME = 'St. Louis, MO: St Louis Lambert International'
+AND DEST_AIRPORT_NAME = 'Denver, CO: Denver International' 
+and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
+
+UNION
+
+select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
+where ORIGIN_AIRPORT_NAME = 'Denver, CO: Denver International' 
+AND DEST_AIRPORT_NAME = 'St. Louis, MO: St Louis Lambert International' 
+and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
+
+),
+
+split_rank as (
+
+select UNIQUE_CARRIER_NAME, 
+SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)),
+RANK() OVER (order by SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) desc) [CARRIER_RANKING]
+from cte
+group by UNIQUE_CARRIER_NAME
+order by RANK() OVER (order by SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) desc) asc
+
+)
+
+select cte.UNIQUE_CARRIER_NAME, 
+sr.[CARRIER_RANKING],
+case when CAST(sr.[CARRIER_RANKING] as int) > 5 then 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as [UNIQUE_CARRIER_UPDATED],
+cte.AIRCRAFT_TYPE,
+AVG(cast(cte.AVERAGE_FARE as float)) AS [Average Fare], 
+SUM(CAST(cte.PASSENGERS AS INT) * CAST(cte.AVERAGE_FARE AS FLOAT)) as [Total Revenue],
+SUM(CAST(cte.PASSENGERS AS INT)) as [Total Passengers],
+SUM(CAST(cte.DEPARTURES_PERFORMED AS INT)) AS [Total Flights]
+from cte
+left join split_rank sr
+on cte.UNIQUE_CARRIER_NAME = sr.UNIQUE_CARRIER_NAME
+GROUP BY cte.UNIQUE_CARRIER_NAME, 
+sr.[CARRIER_RANKING],
+case when CAST(sr.[CARRIER_RANKING] as int) > 5 then 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
+cte.AIRCRAFT_TYPE
+ORDER BY cte.UNIQUE_CARRIER_NAME, sr.[CARRIER_RANKING], cte.AIRCRAFT_TYPE
