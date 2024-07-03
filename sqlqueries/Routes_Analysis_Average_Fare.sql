@@ -51,15 +51,15 @@ where cast(t.DEPARTURES_PERFORMED as int) > 0 and CAST(T.PASSENGERS AS INT) > 0;
 with cte as (
 
 select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
-where ORIGIN_AIRPORT_NAME = 'St. Louis, MO: St Louis Lambert International'
-AND DEST_AIRPORT_NAME = 'Denver, CO: Denver International' 
+where ORIGIN_AIRPORT_NAME = 'Los Angeles, CA: Los Angeles International'
+AND DEST_AIRPORT_NAME = 'New York, NY: John F. Kennedy International' 
 and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
 
 UNION
 
 select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
-where ORIGIN_AIRPORT_NAME = 'Denver, CO: Denver International' 
-AND DEST_AIRPORT_NAME = 'St. Louis, MO: St Louis Lambert International' 
+where ORIGIN_AIRPORT_NAME = 'New York, NY: John F. Kennedy International' 
+AND DEST_AIRPORT_NAME = 'Los Angeles, CA: Los Angeles International' 
 and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
 
 ),
@@ -67,18 +67,17 @@ and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
 split_rank as (
 
 select UNIQUE_CARRIER_NAME, 
-SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)),
-RANK() OVER (order by SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) desc) [CARRIER_RANKING]
+SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) as [Aggregate Revenue],
+CASE WHEN SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) < ((select SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) from cte) / 100.00)
+then 'Other Carriers' else UNIQUE_CARRIER_NAME end as [UNIQUE_CARRIER_SIMPLIFIED]
 from cte
 group by UNIQUE_CARRIER_NAME
-order by RANK() OVER (order by SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) desc) asc
 
 )
 
 select cte.UNIQUE_CARRIER_NAME, 
-sr.[CARRIER_RANKING],
-case when CAST(sr.[CARRIER_RANKING] as int) > 5 then 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as [UNIQUE_CARRIER_UPDATED],
-cte.AIRCRAFT_TYPE,
+sr.[UNIQUE_CARRIER_SIMPLIFIED],
+aclu.[Description] as AIRCRAFT_TYPE,
 AVG(cast(cte.AVERAGE_FARE as float)) AS [Average Fare], 
 SUM(CAST(cte.PASSENGERS AS INT) * CAST(cte.AVERAGE_FARE AS FLOAT)) as [Total Revenue],
 SUM(CAST(cte.PASSENGERS AS INT)) as [Total Passengers],
@@ -86,8 +85,30 @@ SUM(CAST(cte.DEPARTURES_PERFORMED AS INT)) AS [Total Flights]
 from cte
 left join split_rank sr
 on cte.UNIQUE_CARRIER_NAME = sr.UNIQUE_CARRIER_NAME
+
+left join T100_SEGMENT_AIRCRAFT_TYPE_LOOKUP_2023 aclu
+on cte.AIRCRAFT_TYPE = aclu.Code
+
 GROUP BY cte.UNIQUE_CARRIER_NAME, 
-sr.[CARRIER_RANKING],
-case when CAST(sr.[CARRIER_RANKING] as int) > 5 then 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
-cte.AIRCRAFT_TYPE
-ORDER BY cte.UNIQUE_CARRIER_NAME, sr.[CARRIER_RANKING], cte.AIRCRAFT_TYPE
+sr.[UNIQUE_CARRIER_SIMPLIFIED],
+aclu.[Description]
+ORDER BY CAST(sr.[Aggregate Revenue] as int) desc, cte.AIRCRAFT_TYPE;
+
+
+-- Airport Selection for Route Fares Information --
+select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
+from T100_SEGMENT_ALL_CARRIER_2023_FARES
+UNION
+select DEST_AIRPORT_NAME as [AIRPORT_NAME]
+from T100_SEGMENT_ALL_CARRIER_2023_FARES
+
+
+-- Airport Selection for second Dropdown --
+-- This is used for route Fares Information --
+select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
+from T100_SEGMENT_ALL_CARRIER_2023_FARES
+where DEST_AIRPORT_NAME == 'St. Louis, MO: St Louis Lambert International'
+UNION
+select DEST_AIRPORT_NAME as [AIRPORT_NAME]
+from T100_SEGMENT_ALL_CARRIER_2023_FARES
+where ORIGIN_AIRPORT_NAME == 'St. Louis, MO: St Louis Lambert International'
