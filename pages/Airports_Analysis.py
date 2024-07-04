@@ -5,7 +5,6 @@ import plotly_express as px
 
 import dash
 
-from .flightsNavbar import navbar_named
 from .AirportAnalyticsText import airport_text
 from .Airports_Analysis_Cards import generateSummaryCard
 
@@ -587,24 +586,6 @@ def select_airport_visual(selected_viz, selected_airport):
     elif selected_viz == 'Top 10 Connected Airports By Passengers':
 
         return generateAirportsTopTen(selected_viz=selected_viz, selected_airport=selected_airport, sqlite_path=sqlite_path)
-
-        
-
-
-
-@callback(
-    Output(component_id='airport-viz-accordion', component_property='active-item'),
-    Input(component_id='airport-viz-selection', component_property='value')
-)
-def update_airport_accordion(selected_viz):
-
-    if selected_viz == airports_visual_list[0]:
-
-        return "airports-item-1"
-    
-    elif selected_viz == airports_visual_list[1]:
-
-        return "airports-item-2"
 
 
 

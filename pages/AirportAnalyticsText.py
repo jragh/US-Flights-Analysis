@@ -18,12 +18,12 @@ def airport_text():
             ], gap=1, style={'textAlign': '-webkit-center'}, className="my-4 align-items-center"
         ),
 
-        html.Div([
-
-            html.Span([html.I(className='bi bi-buildings-fill', style={'color': '#0B2838', 'fontSize': '4em'})], style={'display': 'inline-block'}),
-            html.H6('Explore data and stats about Airports across the United States.', style={'fontWeight': 100})
-
-        ], style={'margin': 'auto', 'textAlign': 'center', 'justify': 'center'})
+            html.Div([
+            
+                html.Span([html.I(className='bi bi-buildings-fill', style={'color': '#0B2838', 'fontSize': '4em'})], style={'display': 'inline-block'}),
+                html.H6('Explore data and stats about Airports across the United States.', style={'fontWeight': 100})
+    
+            ], style={'margin': 'auto', 'textAlign': 'center', 'justify': 'center'})
 
         ], className='title-animate'),
 
