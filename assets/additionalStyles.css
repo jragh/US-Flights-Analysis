@@ -86,7 +86,9 @@
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #A2D2FF;
+    /* background-color: #A2D2FF;
+    color: #0B2838; */
+    background-color: #E89C31;
     color: #0B2838;
     font-weight:bold;
     border-width: medium;
