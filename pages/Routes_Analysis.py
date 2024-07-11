@@ -9,11 +9,13 @@ from .RoutesAnalyticsText import routes_text
 
 from .Routes_Carriers_Revenue import generateRouteCarrierRevenue
 
+from .Routes_Carriers_Passenger_Utilization import generateRouteCarrierPassengerUtilization
+
 dash.register_page(__name__, path='/RouteAnalytics')
 
 sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
-routes_visual_list = ['Market Pairs: Revenue By Carrier']
+routes_visual_list = ['Market Pairs: Revenue By Carrier', 'Airport Pairs: Passenger Util % By Carrier']
 
 textResults = routes_text()
 
@@ -117,9 +119,9 @@ layout = html.Div([dbc.Container([
 )
 def routesVisualSetup(selected_viz):
 
-    if selected_viz == 'Market Pairs: Revenue By Carrier':
+    sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+    if selected_viz == 'Market Pairs: Revenue By Carrier':
 
         airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = """select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
             from T100_SEGMENT_ALL_CARRIER_2023_FARES
@@ -132,8 +134,15 @@ def routesVisualSetup(selected_viz):
 
 
         return '', '', airport_filter_list, [], True, generateRouteCarrierRevenue(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path)
+    
+    elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier':
 
-## Callback for the Description Accordion ##
+        airports_df = pl.read_database_uri(query="select AIRPORT_NAME from T100_AIRPORT_SELECTION;", engine='adbc', uri=sqlite_path)
+
+        airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
+
+        return '', '', airport_filter_list, [], True, generateRouteCarrierPassengerUtilization(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path)
+
 
 
 
@@ -171,6 +180,25 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
 
         return False, airport_filter_list_2, ''
     
+    if selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and selected_airport_1 != '':
+
+        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+
+        airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = f"""
+            select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
+            from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+            where DEST_AIRPORT_NAME == '{selected_airport_1}'
+            UNION
+            select DEST_AIRPORT_NAME as [AIRPORT_NAME]
+            from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+            where ORIGIN_AIRPORT_NAME == '{selected_airport_1}';
+            """
+        )
+
+        airport_filter_list_2 = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
+
+        return False, airport_filter_list_2, ''
+    
     else:
 
         return True, [], ''
@@ -192,6 +220,7 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
 
         return no_update
 
+    ## First section for Market Pairs Revenue Graph Analysis ##
     elif selected_viz == 'Market Pairs: Revenue By Carrier' and (selected_airport_2 == '' or selected_airport_2.strip() == ''):
 
         return no_update
@@ -201,6 +230,18 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
         sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
         return generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airport_2, sqlite_path)
+
+
+    ## Second Section for Airport Pairs Passenger Utilization Analysis ##
+    elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and (selected_airport_2 == '' or selected_airport_2.strip() == ''):
+
+        return no_update
+    
+    elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and (selected_airport_2 != '' or selected_airport_2.strip() != ''):
+
+        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+
+        return generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, selected_airport_2, sqlite_path)
     
 
 ## Callback for the Routes Description Accordion ##
