@@ -450,3 +450,23 @@
 
 
 }
+
+
+
+.routes-graph-util-select {
+
+    width: 35%;
+    height: 2.25em;
+    border-radius: 25px;
+    
+}
+
+.routes-graph-util-span {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    
+
+}
