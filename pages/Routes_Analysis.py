@@ -359,9 +359,27 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, selected_airport_1, 
                                    ,text_auto='0.3s', barmode='group'
                                    ,color_discrete_map={'Total Passengers': '#E89C31', 'Total Seats': '#F2C689'})
             
+            routes_bar_figure.update_xaxes(categoryorder='total descending')
+
+            routes_bar_figure.update_traces(textposition='outside', textangle=0)
+
+            routes_bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            routes_bar_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)', title=None)
+
+            routes_bar_figure.update_layout(plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9", legend_title=None, 
+                                            legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=1.1), 
+                                            hovermode="x unified", xaxis_title=None,
+                                            margin={'l':10, 'r': 10, 't': 20, 'b': 5},
+                                            yaxis={'tickfont': {'size': 10}, 'title': 'Total Passengers or Seats'})
+
+
+            
             return routes_bar_figure
         
         elif selected_carrier != '' and selected_carrier.strip() != '' and selected_carrier is not None and selected_carrier != 'All Carriers':
+
+            months_text = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
             routes_carriers_pass_util_query = f"""
 
@@ -434,10 +452,42 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, selected_airport_1, 
                                                  engine='adbc', 
                                                  uri=sqlite_path)
             
+            routes_polars = routes_polars.with_columns((pl.col('Total Passengers') / pl.col('Total Seats')).alias('Passenger Utilization Pct'))
+            
             routes_bar_figure = px.bar(routes_polars, x='Month', y=['Total Passengers', 'Total Seats']
                                    ,text_auto='0.3s', barmode='group'
-                                   ,color_discrete_map={'Total Passengers': '#E89C31', 'Total Seats': '#F2C689'},
-                                   title=f"Selected Carrier: {selected_carrier}")
+                                   ,color_discrete_map={'Total Passengers': '#E89C31', 'Total Seats': '#F2C689'} )
+            
+            routes_bar_figure.update_traces(textposition='outside', textangle=0)
+
+            routes_bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+            ## Add in Line Figure
+            line_figure = px.line(routes_polars.select(['Month', 'Passenger Utilization Pct']),
+                                  x='Month', y='Passenger Utilization Pct', category_orders={'Month': months_text}, markers=True)
+            
+            line_figure.update_xaxes(type='category')
+
+            line_figure.update_traces(yaxis ="y2", line_color="rgba(255, 183, 3, 0.6)", name='Passenger Utilization Pct', showlegend=True)
+
+            ## Add Line figure into Bar figure
+            routes_bar_figure.add_traces(list(line_figure.select_traces())).update_layout(yaxis2={"overlaying":"y", "side":"right", 'rangemode': "tozero", "tickformat":'.1%', "title": "Seats / Passengers (%)"},
+                                                                  yaxis1={"rangemode": "normal", "title" : "Total Seats or Passengers"})
+
+            routes_bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)', title=None)
+
+            routes_bar_figure.update_layout(plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9", legend_title=None, 
+                                            legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.25), 
+                                            hovermode="x unified", xaxis_title=None,
+                                            margin={'l':10, 'r': 10, 't': 10, 'b': 5},
+                                            yaxis={'tickfont': {'size': 10}}, yaxis2={'tickfont': {'size': 10}})
+
+
+            routes_bar_figure.update_traces(marker_color="#023E8A", selector={"name": "Total Seats"}, marker={"cornerradius":4})
+
+            routes_bar_figure.update_traces(marker_color="#A2D2FF", selector={"name": "Total Passengers"}, marker={"cornerradius":4})
+
+            routes_bar_figure.update_traces(hovertemplate="%{y}")
             
             return routes_bar_figure
         
