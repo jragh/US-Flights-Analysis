@@ -75,6 +75,25 @@ def generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, s
     routes_bar_figure = px.bar(data_frame=routes_polars, x='Unique Carrier Simplified', y=['Total Passengers', 'Total Seats']
                                ,text_auto='0.3s', barmode='group'
                                ,color_discrete_map={'Total Passengers': '#E89C31', 'Total Seats': '#F2C689'})
+    
+    routes_bar_figure.update_xaxes(categoryorder='total descending')
+
+    routes_bar_figure.update_traces(textposition='outside', textangle=0)
+
+    routes_bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
+
+    routes_bar_figure.update_xaxes(linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)', title=None)
+
+    routes_bar_figure.update_layout(plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9", legend_title=None, 
+                                            legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=1.1), 
+                                            hovermode="x unified", xaxis_title=None,
+                                            margin={'l':10, 'r': 10, 't': 20, 'b': 5},
+                                            yaxis={'tickfont': {'size': 10}, 'title': 'Total Passengers or Seats'})
+    
+    routes_bar_figure.update_traces(selector={"name": "Total Seats"}, marker={"cornerradius":6})
+
+    routes_bar_figure.update_traces(selector={"name": "Total Passengers"}, marker={"cornerradius":6})
+
     return_children = [
         
         html.H2(f"{selected_viz}", id='routes-graph-header', style={'marginBottom': '0.1em'}),

@@ -218,3 +218,18 @@ where CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' el
 group by CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
 CAST(cte.[Month] as int),
 mlu.[MONTH_NAME_SHORT]
+
+
+
+
+---- Testing for Airport Selection Query in dropdown list ----
+---- Included where clause to add filters for passengers, seats, and departure counts ----
+select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME], Month, Passengers, Seats, Departures_Performed
+from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+where DEST_AIRPORT_NAME == 'Santiago, Chile: Arturo Merino Benitez International'
+and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0
+UNION
+select DEST_AIRPORT_NAME as [AIRPORT_NAME], Month, Passengers, Seats, Departures_Performed
+from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
+where ORIGIN_AIRPORT_NAME == 'Santiago, Chile: Arturo Merino Benitez International'
+and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0

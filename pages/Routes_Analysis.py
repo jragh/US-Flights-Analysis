@@ -188,10 +188,12 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
             select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
             where DEST_AIRPORT_NAME == '{selected_airport_1}'
+            and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0
             UNION
             select DEST_AIRPORT_NAME as [AIRPORT_NAME]
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-            where ORIGIN_AIRPORT_NAME == '{selected_airport_1}';
+            where ORIGIN_AIRPORT_NAME == '{selected_airport_1}'
+            and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0;
             """
         )
 
@@ -256,6 +258,10 @@ def accordionActiveItemCallback(selected_viz):
     if selected_viz == routes_visual_list[0]:
 
         return 'routes-item-1'
+    
+    elif selected_viz == routes_visual_list[1]:
+
+        return 'routes-item-2'
     
 
 
