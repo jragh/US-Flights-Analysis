@@ -114,6 +114,8 @@ layout = html.Div([dbc.Container([
     Output(component_id='routes-airport-selection-2', component_property='options'),
     Output(component_id='routes-airport-selection-2', component_property='disabled'),
     Output(component_id='routes-visual-div', component_property='children'),
+    Output(component_id='routes-airport-store-1', component_property='data'),
+    Output(component_id='routes-airport-store-2', component_property='data'),
     Input(component_id='routes-viz-selection', component_property='value')
 
 )
@@ -133,7 +135,7 @@ def routesVisualSetup(selected_viz):
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
 
-        return '', '', airport_filter_list, [], True, generateRouteCarrierRevenue(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path)
+        return '', '', airport_filter_list, [], True, generateRouteCarrierRevenue(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), no_update, no_update
     
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier':
 
@@ -141,7 +143,7 @@ def routesVisualSetup(selected_viz):
 
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
-        return '', '', airport_filter_list, [], True, generateRouteCarrierPassengerUtilization(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path)
+        return '', '', airport_filter_list, [], True, generateRouteCarrierPassengerUtilization(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), {'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, {'airport-name-2': 'New York, NY: John F. Kennedy International'}
 
 
 
@@ -209,6 +211,8 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
 @callback(
 
     Output(component_id='routes-visual-div', component_property='children', allow_duplicate=True),
+    Output(component_id='routes-airport-store-1', component_property='data', allow_duplicate=True),
+    Output(component_id='routes-airport-store-2', component_property='data', allow_duplicate=True),
     State(component_id='routes-viz-selection', component_property='value'),
     State(component_id='routes-airport-selection-1', component_property='value'),
     Input(component_id='routes-airport-selection-2', component_property='value'),
@@ -231,19 +235,19 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
 
         sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
-        return generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airport_2, sqlite_path)
+        return generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airport_2, sqlite_path), no_update, no_update
 
 
     ## Second Section for Airport Pairs Passenger Utilization Analysis ##
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and (selected_airport_2 == '' or selected_airport_2.strip() == ''):
 
-        return no_update
+        return no_update, no_update, no_update
     
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and (selected_airport_2 != '' or selected_airport_2.strip() != ''):
 
         sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
-        return generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, selected_airport_2, sqlite_path)
+        return generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, selected_airport_2, sqlite_path), {'airport-name-1': f"{selected_airport_1}"}, {'airport-name-2': f"{selected_airport_2}"}
     
 
 ## Callback for the Routes Description Accordion ##
@@ -273,13 +277,17 @@ def accordionActiveItemCallback(selected_viz):
     Output(component_id='routes-graph', component_property='figure'),
     Input(component_id='routes-graph-mini-select', component_property='value'),
     State(component_id='routes-viz-selection', component_property='value'),
-    State(component_id='routes-airport-selection-1', component_property='value'),
-    State(component_id='routes-airport-selection-2', component_property='value'),
+    State(component_id='routes-airport-store-1', component_property='data'),
+    State(component_id='routes-airport-store-2', component_property='data'),
     prevent_initial_call=True
 
 
 )
-def changeRoutesGraphVizTwo(selected_carrier, selected_viz, selected_airport_1, selected_airport_2):
+def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, stored_airport_2):
+
+    selected_airport_1 = stored_airport_1['airport-name-1']
+
+    selected_airport_2 = stored_airport_2['airport-name-2']
 
     sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
