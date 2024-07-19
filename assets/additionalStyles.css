@@ -86,7 +86,9 @@
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: #A2D2FF;
+    /* background-color: #A2D2FF;
+    color: #0B2838; */
+    background-color: #E89C31;
     color: #0B2838;
     font-weight:bold;
     border-width: medium;
@@ -446,5 +448,25 @@
     border-width: 4px;
     border-style: solid;
 
+
+}
+
+
+
+.routes-graph-util-select {
+
+    width: 35%;
+    height: 2.25em;
+    border-radius: 25px;
+    
+}
+
+.routes-graph-util-span {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    
 
 }

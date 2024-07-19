@@ -63,7 +63,12 @@ def pathnameCallback(path):
 
     return_children = [
         dbc.Col([
-            flightsNavbar.navbar_named(pathname_pill_pair[path])
+            flightsNavbar.navbar_named(pathname_pill_pair[path]),
+
+            ## Stores used by Routes Page ##
+            dcc.Store(id='routes-airport-store-1', data={'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, storage_type='local'),
+        
+            dcc.Store(id='routes-airport-store-2', data={'airport-name-2': 'New York, NY: John F. Kennedy International'}, storage_type='local')
         ], width=12)
         ]
 

@@ -39,7 +39,16 @@ def routes_text():
                                multiplied by the Average Fare for the market pair. 
                                (Revenue data only includes the Top 1000 Market Pairs in the contiguous United States)""", className="text-muted")
 
-                ], title="Market Pairs: Revenue By Carrier", style={'width': "100%"}, item_id='routes-item-1')
+                ], title="Market Pairs: Revenue By Carrier", style={'width': "100%"}, item_id='routes-item-1'),
+
+                dbc.AccordionItem([
+
+                    html.Small("""A deeper look at passenger travel between 2 airports (both ways), 
+                               comparing Passenger Counts, Available Seats, and Passenger Utilizaiton Rates by Airline Carrier.
+                               Viewing All Carriers will give total counts, while viewing a specific Airline Carrier will give a monthly breakdown.
+                               Small Airline Carriers grouped as 'Other Carriers'.""", className='text-muted')
+
+                ], title='Airport Pairs: Passenger Util % By Carrier', style={'width': '100%'}, item_id='routes-item-2')
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='route-viz-accordion', active_item='routes-item-1')
 
