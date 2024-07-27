@@ -1,5 +1,5 @@
 import polars as pl
-from dash import html, dcc, Input, Output, State, callback
+from dash import html, dcc, Input, Output, State, callback, ctx, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
 
@@ -9,13 +9,15 @@ from .Passenger_Utilization_Summary import summary
 from .PassengerAnalyticsText import passengerText
 from .flightsNavbar import navbar_named
 
+from .Passenger_Utilization_Carrier_Routes import passengerUtilizationCarrierRoutes
+
 dash.register_page(__name__, path='/PassengerAnalytics')
 
 sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 
-passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details']
+passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details', 'Top 10 Passenger Routes By Carrier']
 
 analytics_df = pl.read_database_uri(query="SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 where CAST([PASSENGERS] as FLOAT) > 0 and CAST(SEATS as FLOAT) > 0 and CAST([DEPARTURES_PERFORMED] as FLOAT) > 0 ORDER BY [UNIQUE_CARRIER_NAME], ROUND(CAST([PASSENGERS] as FLOAT), 2) desc", uri=sqlite_path,engine='adbc')
 
@@ -275,6 +277,22 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         ]
 
         return return_children
+    
+    elif selected_pass_viz == 'Top 10 Passenger Routes By Carrier':
+
+        if ctx.triggered_id == 'passenger-carrier-selection':
+
+            if selected_carrier is None or selected_carrier.strip() == '':
+
+                return no_update
+            
+            else:
+
+                return passengerUtilizationCarrierRoutes(f'{selected_carrier}', sqlite_path=sqlite_path)
+
+        elif ctx.triggered_id == 'passenger-viz-selection':
+
+            return passengerUtilizationCarrierRoutes('Porter Airlines, Inc.', sqlite_path=sqlite_path)
 
 
 
