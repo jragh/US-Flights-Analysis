@@ -10,6 +10,7 @@ from .PassengerAnalyticsText import passengerText
 from .flightsNavbar import navbar_named
 
 from .Passenger_Utilization_Carrier_Routes import passengerUtilizationCarrierRoutes
+from .Passenger_Utilization_Carrier_Top10_Toggle import passengerUtilizationCarrierTopTenRoutes
 
 dash.register_page(__name__, path='/PassengerAnalytics')
 
@@ -292,7 +293,15 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         elif ctx.triggered_id == 'passenger-viz-selection':
 
-            return passengerUtilizationCarrierRoutes('Porter Airlines, Inc.', sqlite_path=sqlite_path)
+            if selected_carrier is None or selected_carrier.strip() == '':
+
+                return passengerUtilizationCarrierRoutes('Porter Airlines, Inc.', sqlite_path=sqlite_path)
+            
+            else:
+
+                return passengerUtilizationCarrierRoutes(f'{selected_carrier}', sqlite_path=sqlite_path)
+
+
 
 
 
@@ -309,6 +318,19 @@ def pass_details_disable_carrier(selected_pass_viz, carrier_state):
         return True, None
     
     return False, carrier_state
+
+
+@callback(
+    Output(component_id='passengers-graph', component_property='figure'),
+    [Input(component_id='passengers-graph-mini-select', component_property='value')],
+    State(component_id='passengers-carrier-routes-store', component_property='data'),
+    prevent_initial_call=True
+)
+def togglePassengerCarrierTopRoutesFigure(route_toggle, stored_carrier):
+
+    print('Hello Toggle!')
+
+    return no_update
 
 
 ## This Callback is for the Passenger visualization components ##

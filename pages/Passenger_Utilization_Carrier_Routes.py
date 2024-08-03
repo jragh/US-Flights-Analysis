@@ -7,6 +7,8 @@ import plotly_express as px
 
 ## Currently deciding that there will be no option for total USA ##
 ## Default is Porter airlines (Clean looking visual) ##
+
+## TODO July 29: Implement DCC Store to capture state of carrier whenever it's last changed ##
 def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
 
     sqlite_carrier_routes_query = f"""
@@ -91,7 +93,7 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
                               showgrid=True, zeroline=False, showline=False, 
                               showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)")
 
-    polars_barchart.update_traces(marker_color="rgb(255, 183, 3)", selector={"name": "TOTAL SEATS"}, textposition='outside', textangle=0)
+    polars_barchart.update_traces(marker_color="#E89C31", selector={"name": "TOTAL SEATS"}, textposition='outside', textangle=0)
 
     polars_barchart.update_traces(marker_color="#023E8A", selector={"name": "TOTAL PASSENGERS"}, textposition="inside", textangle=0)   
 
@@ -102,9 +104,26 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
         html.H2('Top 10 Passenger Routes By Carrier w/ Passenger Util %', id='passenger-graph-header', style={'marginBottom': '0.1em'}),
         html.P(f'{selected_carrier}', id='passengers-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
         html.Hr(className='my-2'),
-        html.P(passengers_visual_desc, className='mb-2 text-muted', id='passengers-graph-desc', style={'fontSize': '0.85em'}),
+        html.P(passengers_visual_desc, className='mb-0 text-muted', id='passengers-graph-desc', style={'fontSize': '0.85em'}),
 
-        dcc.Graph(id='passengers-graph-carrier-routes', style={'height': '50vh'}, figure=polars_barchart)
+        html.Span(children=[
+
+            ## Switching to Radio Items as a test for the callback ##
+            dbc.RadioItems(inline=True, value=1, id='passengers-graph-mini-select', options=[
+                {'label': 'Passenger & Seat Counts', 'value': 1},
+                {'label': 'Passenger Utilization Pct (%)', 'value': 2}
+            ], className='mb-0 text-muted', style={'fontSize': '0.8em'})
+
+        ], className='passengers-graph-util-span mb-0'),
+
+            ##html.Small('Passenger & Seat Counts', className='mb-0 text-muted mx-2', style={'fontSize': '0.75em'}),
+            
+            ##dbc.Select(id='passengers-graph-mini-select', size='sm', options=['Passenger & Seat Counts', 'Passenger Utilization Pct (%)'], class_name='routes-graph-util-select'),
+           ## html.Small('Passenger Utilization Pct (%)', className='mb-0 text-muted', style={'fontSize': '0.75em'})
+
+        dcc.Store(id='passengers-carrier-routes-store', data={'airport-name': selected_carrier}),
+
+        dcc.Graph(id='passengers-graph', style={'height': '48vh'}, figure=polars_barchart)
 
     ]
 
