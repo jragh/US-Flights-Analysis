@@ -29,56 +29,47 @@ def passengerText():
                     html.I(className='bi bi-people-fill me-2', style={'color': '#0B2838', 'fontSize': '4em'}), style={'display': 'inline-block'}
                 ),
 
-                html.H6('Here is some example text describing what the passenger analytics will be like', style={'fontWeight': 100})
+                html.H6('Discover insights on Passenger Airline travel throughout the United States using Passenger and Available Seat counts!', style={'fontWeight': 100})
 
-                ], style={'margin': 'auto 0 auto 2em', 'justifyContent': 'center', 'textAlign': 'center'})
+                ], style={'margin': 'auto 0 auto 0', 'justifyContent': 'center', 'textAlign': 'center'})
 
         ], className='title-animate'),
 
         html.Div([
-            dbc.ListGroup([
 
-                dbc.ListGroupItem([
-                    html.Div([
+            dbc.Accordion([
 
-                        html.H6('Passengers By Carrier', className='my-0'),
-                        html.Span(html.Small('1', style={'color': '#0B2838'}), style={'borderRadius': '50px', 'backgroundColor': 'white', 'display': 'inline-block'}, id='pass-1-desc-span')
+                dbc.AccordionItem([
 
-                    ], className='w-100 d-flex justify-content-between mb-2', id='pass-1-desc'),
                     html.Small("""Select to see how many passengers flew on flights throughout the entire year.
                                Can filter by Airline Carrier.""", className="text-muted")
-                ]),
 
-                dbc.ListGroupItem([
-                    html.Div([
+                ], title="Passengers By Carrier", style={'width': "100%"}, item_id='passengers-item-1'),
 
-                        html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
-                        html.Span(html.Small('2', style={'color': '#0B2838'}), style={'borderRadius': '50px', 'backgroundColor': 'white', 'display': 'inline-block'}, id='pass-2-desc-span')
+                dbc.AccordionItem([
 
-                    ], className='w-100 d-flex justify-content-between mb-2', id='pass-2-desc'),
-                    html.Small("""Select to see % of seats filled by Passengers on flights.
-                               Can filter by Airline Carrier.""", className="text-muted")
-                ]),
+                    html.Small("""Select to see % of seats filled by Passengers on flights. Can filter by Airline Carrier.""", className='text-muted')
 
-                dbc.ListGroupItem([
-                    html.Div([
+                ], title='Passenger Utilization By Carrier (%)', style={'width': "100%"}, item_id='passengers-item-2'),
 
-                        html.H6('Passenger Utilization Details', className='my-0'),
-                        html.Span(html.Small('3', style={'color': '#0B2838'}), style={'borderRadius': '50px', 'backgroundColor': 'white', 'display': 'inline-block'}, id='pass-3-desc-span')
+                dbc.AccordionItem([
 
-                    ], className='w-100 d-flex justify-content-between mb-2', id='pass-3-desc'),
-                    html.Small("""Select to see a detailed table on Passenger Utilization.
-                               Passengers! Seats! Aircraft! Routes! Departures! 
-                               Filters in column headers.""", className="text-muted")
-                    
-                ])
+                    html.Small("""Select to see a detailed table on Passenger Utilization. Passengers! Seats! Aircraft! Routes! Departures! 
+                               Filters in column headers.""", className='text-muted')
 
+                ], title='Passenger Utilization Details', style={'width': "100%"}, item_id='passengers-item-3'),
 
+                dbc.AccordionItem([
 
-            ], className='w-100 d-flex')
-        ], className='mt-3 w-100 d-flex justify-content-center')
+                    html.Small("""Visualizes Top 10 Carrier Routes Load Factor using either the Passenger & Seat overlay chart or the Passenger Utilization % chart.
+                               A specific airport must be selected (when switching to visual without any airport filter, an airport will automatically be selected).""",
+                               className='text-muted')
 
-        
+                ], title='Top 10 Passenger Routes By Carrier', style={'width': "100%"}, item_id='passengers-item-4')
+
+            ], class_name='d-flex flex-column w-100 flex-grow-1', id='passenger-viz-accordion', active_item='passengers-item-1')
+
+        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll', style={'height': '45vh'})
         
     ]
 

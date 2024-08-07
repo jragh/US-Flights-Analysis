@@ -121,7 +121,7 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
             ##dbc.Select(id='passengers-graph-mini-select', size='sm', options=['Passenger & Seat Counts', 'Passenger Utilization Pct (%)'], class_name='routes-graph-util-select'),
            ## html.Small('Passenger Utilization Pct (%)', className='mb-0 text-muted', style={'fontSize': '0.75em'})
 
-        dcc.Store(id='passengers-carrier-routes-store', data={'airport-name': selected_carrier}),
+        dcc.Store(id='passengers-carrier-routes-store', data={'carrier-name': selected_carrier}),
 
         dcc.Graph(id='passengers-graph', style={'height': '48vh'}, figure=polars_barchart)
 
