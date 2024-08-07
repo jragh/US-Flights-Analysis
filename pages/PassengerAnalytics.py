@@ -1,5 +1,5 @@
 import polars as pl
-from dash import html, dcc, Input, Output, State, callback
+from dash import html, dcc, Input, Output, State, callback, ctx, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
 
@@ -9,13 +9,16 @@ from .Passenger_Utilization_Summary import summary
 from .PassengerAnalyticsText import passengerText
 from .flightsNavbar import navbar_named
 
+from .Passenger_Utilization_Carrier_Routes import passengerUtilizationCarrierRoutes
+from .Passenger_Utilization_Carrier_Top10_Toggle import passengerUtilizationCarrierTopTenRoutes, passengerCountsCarrierTopTenRoutes
+
 dash.register_page(__name__, path='/PassengerAnalytics')
 
 sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 
-passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details']
+passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details', 'Top 10 Passenger Routes By Carrier']
 
 analytics_df = pl.read_database_uri(query="SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 where CAST([PASSENGERS] as FLOAT) > 0 and CAST(SEATS as FLOAT) > 0 and CAST([DEPARTURES_PERFORMED] as FLOAT) > 0 ORDER BY [UNIQUE_CARRIER_NAME], ROUND(CAST([PASSENGERS] as FLOAT), 2) desc", uri=sqlite_path,engine='adbc')
 
@@ -275,6 +278,30 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         ]
 
         return return_children
+    
+    elif selected_pass_viz == 'Top 10 Passenger Routes By Carrier':
+
+        if ctx.triggered_id == 'passenger-carrier-selection':
+
+            if selected_carrier is None or selected_carrier.strip() == '':
+
+                return no_update
+            
+            else:
+
+                return passengerUtilizationCarrierRoutes(f'{selected_carrier}', sqlite_path=sqlite_path)
+
+        elif ctx.triggered_id == 'passenger-viz-selection':
+
+            if selected_carrier is None or selected_carrier.strip() == '':
+
+                return passengerUtilizationCarrierRoutes('Porter Airlines, Inc.', sqlite_path=sqlite_path)
+            
+            else:
+
+                return passengerUtilizationCarrierRoutes(f'{selected_carrier}', sqlite_path=sqlite_path)
+
+
 
 
 
@@ -293,76 +320,52 @@ def pass_details_disable_carrier(selected_pass_viz, carrier_state):
     return False, carrier_state
 
 
-## This Callback is for the Passenger visualization components ##
 @callback(
-    Output(component_id='pass-1-desc', component_property='children'),
-    Output(component_id='pass-2-desc', component_property='children'),
-    Output(component_id='pass-3-desc', component_property='children'),
+    Output(component_id='passengers-graph', component_property='figure'),
+    [Input(component_id='passengers-graph-mini-select', component_property='value')],
+    State(component_id='passengers-carrier-routes-store', component_property='data'),
+    prevent_initial_call=True
+)
+def togglePassengerCarrierTopRoutesFigure(route_toggle, stored_carrier):
+
+    print('Hello Toggle!')
+
+    if route_toggle == 2:
+
+        ## Currently using global for sqlite path, will need to change this ## 
+        return passengerUtilizationCarrierTopTenRoutes(route_toggle, stored_carrier['carrier-name'], sqlite_path=sqlite_path)
+    
+    elif route_toggle == 1:
+
+        ## Again using global sqlite path, will need to change this to a local variation
+        return passengerCountsCarrierTopTenRoutes(route_toggle, stored_carrier['carrier-name'], sqlite_path=sqlite_path)
+
+    else: 
+
+        return no_update
+
+
+
+## This callback is for the Passenger Visual Text Accordion ##
+## Button will become active based on the visual selection that user inputs ##
+@callback(
+    Output(component_id='passenger-viz-accordion', component_property='active_item'),
     [Input(component_id='passenger-viz-selection', component_property='value')]
 )
-def highlight_active_pass_viz(selected_viz):
+def accordionActiveItemCallback(selected_viz):
 
-    old_style = {'borderRadius': '50%', 'backgroundColor': 'white', 'display': 'inline-block'}
+    if selected_viz == passenger_viz_list[0]:
 
-    highlight_style = {'borderRadius': '50%', 'backgroundColor': '#0B2838', 'display': 'inline-block', 'padding': '0.09em 0.6em'}
-
-    if selected_viz == 'Passengers By Carrier':
-
-        child_1 = [
-            html.H6('Passengers By Carrier', className='my-0'),
-            html.Span(html.Small('1', style={'color': '#E89C31'}), style=highlight_style, id='pass-1-desc-span')
-                    ]
-        
-        child_2 = [
-            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
-            html.Span(html.Small('2', style={'color': '#0B2838'}), style=old_style, id='pass-2-desc-span')
-                ]
-        
-        child_3 = [
-            html.H6('Passenger Utilization Details', className='my-0'),
-            html.Span(html.Small('3', style={'color': '#0B2838'}), style=old_style, id='pass-3-desc-span')
-                ]
-        
-        return child_1, child_2, child_3
+        return 'passengers-item-1'
     
+    elif selected_viz == passenger_viz_list[1]:
 
-    elif selected_viz == 'Passenger Utilization By Carrier (%)':
-
-        child_1 = [
-            html.H6('Passengers By Carrier', className='my-0'),
-            html.Span(html.Small('1', style={'color': '#0B2838'}), style=old_style, id='pass-1-desc-span')
-                    ]
-        
-        child_2 = [
-            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
-            html.Span(html.Small('2', style={'color': '#E89C31'}), style=highlight_style, id='pass-2-desc-span')
-                ]
-        
-        child_3 = [
-            html.H6('Passenger Utilization Details', className='my-0'),
-            html.Span(html.Small('3', style={'color': '#0B2838'}), style=old_style, id='pass-3-desc-span')
-                ]
-        
-        return child_1, child_2, child_3
+        return 'passengers-item-2'
     
+    elif selected_viz == passenger_viz_list[2]:
 
+        return 'passengers-item-3'
+    
+    elif selected_viz == passenger_viz_list[3]:
 
-    elif selected_viz == 'Passenger Utilization Details':
-
-        child_1 = [
-            html.H6('Passengers By Carrier', className='my-0'),
-            html.Span(html.Small('1', style={'color': '#0B2838'}), style=old_style, id='pass-1-desc-span')
-                    ]
-        
-        child_2 = [
-            html.H6('Passenger Utilization By Carrier (%)', className='my-0'),
-            html.Span(html.Small('2', style={'color': '#0B2838'}), style=old_style, id='pass-2-desc-span')
-                ]
-        
-        child_3 = [
-            html.H6('Passenger Utilization Details', className='my-0'),
-            html.Span(html.Small('3', style={'color': '#E89C31'}), style=highlight_style, id='pass-3-desc-span')
-                ]
-        
-        return child_1, child_2, child_3
-
+        return 'passengers-item-4'
