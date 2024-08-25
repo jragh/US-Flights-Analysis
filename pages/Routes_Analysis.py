@@ -11,11 +11,13 @@ from .Routes_Carriers_Revenue import generateRouteCarrierRevenue
 
 from .Routes_Carriers_Passenger_Utilization import generateRouteCarrierPassengerUtilization
 
+from .Routes_Scatter_Analysis_Carriers import generateScatterCarrierRouteLoadFactor
+
 dash.register_page(__name__, path='/RouteAnalytics')
 
 sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
-routes_visual_list = ['Market Pairs: Revenue By Carrier', 'Airport Pairs: Passenger Util % By Carrier']
+routes_visual_list = ['Market Pairs: Revenue By Carrier', 'Airport Pairs: Passenger Util % By Carrier', 'Scatter Analysis: Load Factor By Carrier']
 
 textResults = routes_text()
 
@@ -112,6 +114,7 @@ layout = html.Div([dbc.Container([
     Output(component_id='routes-airport-selection-2', component_property='value'),
     Output(component_id='routes-airport-selection-1', component_property='options'),
     Output(component_id='routes-airport-selection-2', component_property='options'),
+    Output(component_id='routes-airport-selection-1', component_property='disabled'),
     Output(component_id='routes-airport-selection-2', component_property='disabled'),
     Output(component_id='routes-visual-div', component_property='children'),
     Output(component_id='routes-airport-store-1', component_property='data'),
@@ -135,7 +138,7 @@ def routesVisualSetup(selected_viz):
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
 
-        return '', '', airport_filter_list, [], True, generateRouteCarrierRevenue(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), no_update, no_update
+        return '', '', airport_filter_list, [], False, True, generateRouteCarrierRevenue(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), no_update, no_update
     
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier':
 
@@ -143,9 +146,12 @@ def routesVisualSetup(selected_viz):
 
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
-        return '', '', airport_filter_list, [], True, generateRouteCarrierPassengerUtilization(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), {'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, {'airport-name-2': 'New York, NY: John F. Kennedy International'}
+        return '', '', airport_filter_list, [], False, True, generateRouteCarrierPassengerUtilization(selected_viz, 'Los Angeles, CA: Los Angeles International', 'New York, NY: John F. Kennedy International', sqlite_path), {'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, {'airport-name-2': 'New York, NY: John F. Kennedy International'}
 
 
+    elif selected_viz == 'Scatter Analysis: Load Factor By Carrier':
+
+        return '', '', [], [], True, True, generateScatterCarrierRouteLoadFactor(selected_viz=selected_viz, selected_carrier='Southwest Airlines Co.', sqlite_path=sqlite_path), {'airport-name-1': 'None'}, {'airport-name-2': 'None'}
 
 
 ## First Callback to handle the first location

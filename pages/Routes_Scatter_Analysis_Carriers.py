@@ -83,14 +83,14 @@ def generateScatterCarrierRouteLoadFactor(selected_viz, selected_carrier, sqlite
 
         scatter_figure = px.scatter(routes_polars, x="Total Flights", y = "Load Factor Ratio", 
                                     log_x= False, custom_data=["Total Passengers", "Total Seats", "Route Airport Pair"], marginal_y="violin",
-                                    opacity=0.7, color = "#E89C31", size=10)
+                                    opacity=0.7)
         
-        scatter_figure.update_traces(marker={"linewidth": 0.75}, hovertemplate = '''
+        scatter_figure.update_traces(marker={"line": {'width': 0.75}, 'size': 10, 'color': '#E89C31'}, hovertemplate = '''
                                     <b>%{customdata[2]}</b><br><br>
-                                    <b>Load Factor:</b> %{y:%.2f}<br>
+                                    <b>Load Factor:</b> %{y:.2%}<br>
                                     <b>Total Passengers:</b> %{customdata[0]:,3s}<br>
                                     <b>Total Seats:</b> %{customdata[1]:,3s}<br>
-                                    <b>Total Flights:</b> %{customdata[1]:,3f}<br>''',
+                                    <b>Total Flights:</b> %{x:,3f}<br>''',
                                     )
         
         scatter_figure.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},
@@ -98,13 +98,21 @@ def generateScatterCarrierRouteLoadFactor(selected_viz, selected_carrier, sqlite
                                showlegend=False)
     
         scatter_figure.update_yaxes(title='Route Load Factor', showline=False, showgrid=True, showticklabels=True, tickwidth=2,
-                              gridcolor='rgba(60, 60, 60, 0.15)')
+                              gridcolor='rgba(60, 60, 60, 0.15)', row=1, col=1)
     
         scatter_figure.update_xaxes(title='Total Departures Performed',
                               showgrid=True, showline=True, linewidth=2.5, linecolor='rgb(180, 180, 180)',
-                              showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)")
+                              showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)", row=1, col=1)
         
-        return_children = []
+        return_children = [
+
+            html.H2(f"{selected_viz}", id='routes-graph-header', style={'marginBottom': '0.1em'}),
+            html.P(f'Selected Airline Carrier: {selected_carrier}', id='routes-graph-subheader', className='text-muted', style={'marginBottom': '0.2em'}),
+            html.Hr(className='my-2'),
+            html.P(routes_visual_desc, className='mb-2 text-muted', id='routes-graph-desc', style={'fontSize': '0.85em'}), 
+            dcc.Graph(id='routes-graph', style={'height':'54vh'}, figure=scatter_figure)
+
+        ]
 
         return return_children
 
