@@ -11,7 +11,7 @@ from .Routes_Carriers_Revenue import generateRouteCarrierRevenue
 
 from .Routes_Carriers_Passenger_Utilization import generateRouteCarrierPassengerUtilization
 
-from .Routes_Scatter_Analysis_Carriers import generateScatterCarrierRouteLoadFactor
+from .Routes_Scatter_Analysis_Carriers import generateScatterCarrierRouteLoadFactor, updateScatterCarrierRouteLoadFactor
 
 dash.register_page(__name__, path='/RouteAnalytics')
 
@@ -151,7 +151,7 @@ def routesVisualSetup(selected_viz):
 
     elif selected_viz == 'Scatter Analysis: Load Factor By Carrier':
 
-        return '', '', [], [], True, True, generateScatterCarrierRouteLoadFactor(selected_viz=selected_viz, selected_carrier='Southwest Airlines Co.', sqlite_path=sqlite_path), {'airport-name-1': 'None'}, {'airport-name-2': 'None'}
+        return '', '', [], [], True, True, generateScatterCarrierRouteLoadFactor(selected_viz=selected_viz, selected_carrier='', sqlite_path=sqlite_path), {'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, {'airport-name-2': 'New York, NY: John F. Kennedy International'}
 
 
 ## First Callback to handle the first location
@@ -230,12 +230,12 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
 
     if selected_airport_2 is None:
 
-        return no_update
+        return no_update, no_update, no_update
 
     ## First section for Market Pairs Revenue Graph Analysis ##
     elif selected_viz == 'Market Pairs: Revenue By Carrier' and (selected_airport_2 == '' or selected_airport_2.strip() == ''):
 
-        return no_update
+        return no_update, no_update, no_update
     
     elif selected_viz == 'Market Pairs: Revenue By Carrier' and (selected_airport_2 != '' or selected_airport_2.strip() != ''):
 
@@ -254,7 +254,10 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
         sqlite_path = 'sqlite:///US_Flights_Analytics.db'
 
         return generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, selected_airport_2, sqlite_path), {'airport-name-1': f"{selected_airport_1}"}, {'airport-name-2': f"{selected_airport_2}"}
-    
+
+    elif selected_viz == 'Scatter Analysis: Load Factor By Carrier':
+
+        return no_update, no_update, no_update  
 
 ## Callback for the Routes Description Accordion ##
 @callback(
@@ -273,6 +276,10 @@ def accordionActiveItemCallback(selected_viz):
 
         return 'routes-item-2'
     
+    elif selected_viz == routes_visual_list[2]:
+
+        return 'routes-item-3'
+    
 
 
 ## Need to add a callback for the Graph display based on selection ##
@@ -281,6 +288,7 @@ def accordionActiveItemCallback(selected_viz):
 @callback(
 
     Output(component_id='routes-graph', component_property='figure'),
+    Output(component_id='routes-graph-subheader', component_property='children'),
     Input(component_id='routes-graph-mini-select', component_property='value'),
     State(component_id='routes-viz-selection', component_property='value'),
     State(component_id='routes-airport-store-1', component_property='data'),
@@ -395,7 +403,7 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
 
 
             
-            return routes_bar_figure
+            return routes_bar_figure, no_update
         
         elif selected_carrier != '' and selected_carrier.strip() != '' and selected_carrier is not None and selected_carrier != 'All Carriers':
 
@@ -509,12 +517,29 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
 
             routes_bar_figure.update_traces(hovertemplate="%{y}")
             
-            return routes_bar_figure
+            return routes_bar_figure, no_update
         
         else: 
 
-            return no_update
+            return no_update, no_update
+        
+    elif selected_viz == 'Scatter Analysis: Load Factor By Carrier':
+
+        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+
+        print(selected_carrier)
+
+        if selected_carrier is None or selected_carrier.strip() == '' or selected_carrier == 'All Carriers':
+
+            return updateScatterCarrierRouteLoadFactor('', sqlite_path=sqlite_path, min_flights=200), 'Scatter Analysis: All Carriers'
+        
+        else:
+
+            return updateScatterCarrierRouteLoadFactor(selected_carrier=selected_carrier, sqlite_path=sqlite_path, min_flights=200), f'Scatter Analysis: {selected_carrier}'
+
+
 
     else:
 
         return no_update
+    

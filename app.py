@@ -66,9 +66,9 @@ def pathnameCallback(path):
             flightsNavbar.navbar_named(pathname_pill_pair[path]),
 
             ## Stores used by Routes Page ##
-            dcc.Store(id='routes-airport-store-1', data={'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, storage_type='local'),
+            dcc.Store(id='routes-airport-store-1', data={'airport-name-1': 'Los Angeles, CA: Los Angeles International'}, storage_type='memory'),
         
-            dcc.Store(id='routes-airport-store-2', data={'airport-name-2': 'New York, NY: John F. Kennedy International'}, storage_type='local')
+            dcc.Store(id='routes-airport-store-2', data={'airport-name-2': 'New York, NY: John F. Kennedy International'}, storage_type='memory')
         ], width=12)
         ]
 
@@ -423,4 +423,4 @@ def pathnameCallback(path):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8050)
+    app.run_server(debug=True)
