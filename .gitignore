@@ -6,3 +6,8 @@ testFile.txt
 
 ## Never include any log files
 *.log
+
+venv 
+*.pyc 
+.DS_Store 
+.env

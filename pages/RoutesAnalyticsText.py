@@ -48,11 +48,19 @@ def routes_text():
                                Viewing All Carriers will give total counts, while viewing a specific Airline Carrier will give a monthly breakdown.
                                Small Airline Carriers grouped as 'Other Carriers'.""", className='text-muted')
 
-                ], title='Airport Pairs: Passenger Util % By Carrier', style={'width': '100%'}, item_id='routes-item-2')
+                ], title='Airport Pairs: Passenger Util % By Carrier', style={'width': '100%'}, item_id='routes-item-2'),
+
+                dbc.AccordionItem([
+
+                    html.Small("""Scatter view allows you to assess load factors (Percentage of available seating capacity that is filled with passengers) for each route an airline carrier operates. 
+                               When viewing All Carriers, the scatter points show the airlines overall load factor vs. how many flights they operate (minimum 200 departures performed). 
+                               Individual airline carrier view allows the user to see the load factor for each route vs. the number of flights (minimum 20 departures performed for the route).""", className='text-muted')
+
+                ], title='Scatter Analysis: Load Factor By Carrier', item_id='routes-item-3', style={'width': '100%'})
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='route-viz-accordion', active_item='routes-item-1')
 
-        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll') 
+        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll', style={'height': '45vh'}) 
 
     ]
 
