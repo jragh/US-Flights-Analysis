@@ -2,6 +2,7 @@ import polars as pl
 from dash import html, dcc, Input, Output, State, callback, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
+import os
 
 import dash
 
@@ -14,21 +15,21 @@ dash.register_page(__name__, path='/AirportAnalytics')
 
 textResults = airport_text()
 
-sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
-airports_df = pl.read_database_uri(engine='adbc', uri='sqlite:///US_Flights_Analytics.db', query = """select b.[DESCRIPTION] as [CITY AIRPORT NAME], 
-                                   count(*) as [NUMBER OF RECORDS]
-from [T100_SEGMENT_ALL_CARRIER_2023] a
-left join T100_AIRPORT_CODE_LOOKUP_2023 b
-on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
-where CAST(a.[PASSENGERS] AS INT) > 0
-and CAST(a.[SEATS] AS INT) > 0
-AND CAST(a.[DEPARTURES_PERFORMED] as int) > 0
-and b.[DESCRIPTION] is not null
-and a.[ORIGIN_COUNTRY_NAME] LIKE 'United States'
-group by b.[DESCRIPTION]
-ORDER BY b.[DESCRIPTION] ASC;"""
-)
+airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = """
+                                select b.DESCRIPTION as "CITY AIRPORT NAME", 
+                                count(*) as "NUMBER OF RECORDS"
+                                from public.T100_SEGMENT_ALL_CARRIER_2023 a
+                                left join public.T100_AIRPORT_CODE_LOOKUP_2023 b
+                                on a.ORIGIN_AIRPORT_ID = b.CODE
+                                where CAST(a.PASSENGERS AS numeric) > 0
+                                and CAST(a.SEATS AS numeric) > 0
+                                AND CAST(a.DEPARTURES_PERFORMED as numeric) > 0
+                                and b.DESCRIPTION is not null
+                                and a.ORIGIN_COUNTRY_NAME LIKE 'United States'
+                                group by b.DESCRIPTION
+                                ORDER BY b.DESCRIPTION ASC;""")
 
 airport_filter_list = sorted([val['CITY AIRPORT NAME'] for val in airports_df.select(['CITY AIRPORT NAME']).unique().to_dicts()])
 
@@ -122,24 +123,20 @@ def select_airport_visual(selected_viz, selected_airport):
         if selected_airport is None or selected_airport.strip() == '':
 
             airports_query = """
-            select a.[UNIQUE_CARRIER_NAME] as [UNIQUE CARRIER NAME],
-                SUM(CAST(a.[PASSENGERS] AS INT)) AS [TOTAL PASSENGERS],
-                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) AS [TOTAL DEPARTED FLIGHTS],
-                CAST(COUNT(DISTINCT a.[DEST_AIRPORT_ID]) as INT) as [TOTAL DESTINATION AIRPORTS]
-
-                from [T100_SEGMENT_ALL_CARRIER_2023] a
-                left join [T100_AIRPORT_CODE_LOOKUP_2023] b
-                on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
-
-                where CAST(a.[PASSENGERS] AS INT) > 0
-                and CAST(a.[SEATS] AS INT) > 0
-                AND CAST(a.[DEPARTURES_PERFORMED] as int) > 0
-                and b.[DESCRIPTION] IS NOT NULL
-                AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
-
-                GROUP BY a.[UNIQUE_CARRIER_NAME]
-
-                order by a.[UNIQUE_CARRIER_NAME]
+            select a.UNIQUE_CARRIER_NAME as "UNIQUE CARRIER NAME",
+            SUM(CAST(a.PASSENGERS AS real)) AS "TOTAL PASSENGERS",
+            SUM(CAST(a.DEPARTURES_PERFORMED as real)) AS "TOTAL DEPARTED FLIGHTS",
+            CAST(COUNT(DISTINCT a.DEST_AIRPORT_ID) as real) as "TOTAL DESTINATION AIRPORTS"
+            from T100_SEGMENT_ALL_CARRIER_2023 a
+            left join T100_AIRPORT_CODE_LOOKUP_2023 b
+            on a.ORIGIN_AIRPORT_ID = b.CODE
+            where CAST(a.PASSENGERS AS numeric) > 0
+            and CAST(a.SEATS AS numeric) > 0
+            AND CAST(a.DEPARTURES_PERFORMED as numeric) > 0
+            and b.DESCRIPTION IS NOT NULL
+            AND a.ORIGIN_COUNTRY_NAME = 'United States'
+            GROUP BY a.UNIQUE_CARRIER_NAME
+            order by a.UNIQUE_CARRIER_NAME
             """
 
             airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
@@ -184,7 +181,15 @@ def select_airport_visual(selected_viz, selected_airport):
         
         else:
 
-            airports_query = f"""SELECT * FROM [T100_ORIGIN_AIRPORTS_AGGREGATE] where [ORIGIN AIRPORT NAME] = '{selected_airport}'"""
+            airports_query = f"""
+                SELECT "ORIGIN AIRPORT NAME", 
+                "UNIQUE CARRIER NAME", 
+                CAST("TOTAL PASSENGERS" as real) as "TOTAL PASSENGERS", 
+                CAST("TOTAL DEPARTED FLIGHTS" AS real) as "TOTAL DEPARTED FLIGHTS", 
+                CAST("TOTAL DESTINATION AIRPORTS" AS real) as "TOTAL DESTINATION AIRPORTS"
+                FROM t100_origin_airports_aggregate
+                where "ORIGIN AIRPORT NAME" = '{selected_airport}'
+            """
 
             airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
 
@@ -231,39 +236,34 @@ def select_airport_visual(selected_viz, selected_airport):
         if selected_airport is None or selected_airport.strip() == '' or selected_airport == '':
 
             airports_query = """
-            select a.[UNIQUE_CARRIER_NAME] as [UNIQUE CARRIER NAME],
-                SUM(CAST(a.[PASSENGERS] AS INT)) AS [TOTAL PASSENGERS],
-                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) AS [TOTAL DEPARTED FLIGHTS],
-                CAST(COUNT(DISTINCT a.[DEST_AIRPORT_ID]) as INT) as [TOTAL DESTINATION AIRPORTS]
-
-                from [T100_SEGMENT_ALL_CARRIER_2023] a
-                left join [T100_AIRPORT_CODE_LOOKUP_2023] b
-                on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
-
-                where CAST(a.[PASSENGERS] AS INT) > 0
-                and CAST(a.[SEATS] AS INT) > 0
-                AND CAST(a.[DEPARTURES_PERFORMED] as int) > 0
-                and b.[DESCRIPTION] IS NOT NULL
-                AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
-
-                GROUP BY a.[UNIQUE_CARRIER_NAME]
-
-                order by a.[UNIQUE_CARRIER_NAME]
+            select a.UNIQUE_CARRIER_NAME as "UNIQUE CARRIER NAME",
+            SUM(CAST(a.PASSENGERS AS real)) AS "TOTAL PASSENGERS",
+            SUM(CAST(a.DEPARTURES_PERFORMED AS real)) AS "TOTAL DEPARTED FLIGHTS",
+            CAST(COUNT(DISTINCT a.DEST_AIRPORT_ID) as real) as "TOTAL DESTINATION AIRPORTS"
+            from T100_SEGMENT_ALL_CARRIER_2023 a
+            left join T100_AIRPORT_CODE_LOOKUP_2023 b
+            on a.ORIGIN_AIRPORT_ID = b.CODE
+            where CAST(a.PASSENGERS AS real) > 0
+            and CAST(a.SEATS AS real) > 0
+            AND CAST(a.DEPARTURES_PERFORMED as real) > 0
+            and b.DESCRIPTION IS NOT NULL
+            AND a.ORIGIN_COUNTRY_NAME = 'United States'
+            GROUP BY a.UNIQUE_CARRIER_NAME
+            order by a.UNIQUE_CARRIER_NAME
             """
 
             airports_unique_destination_query = """
-            select COUNT(distinct c.[DESCRIPTION]) as [TOTAL DESTINATION AIRPORTS]
-            FROM [T100_SEGMENT_ALL_CARRIER_2023] a
-            left join [T100_AIRPORT_CODE_LOOKUP_2023] b
-            on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
-            left join [T100_AIRPORT_CODE_LOOKUP_2023] c
-            on a.[DEST_AIRPORT_ID] = c.[CODE]
-
-            WHERE CAST(a.[PASSENGERS] AS INT) > 0 
-            AND CAST([DEPARTURES_PERFORMED] AS INT) > 0
-            AND b.[DESCRIPTION] is not null
-            AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
-            and c.[DESCRIPTION] IS NOT NULL
+            select COUNT(distinct c.DESCRIPTION) as "TOTAL DESTINATION AIRPORTS"
+            FROM T100_SEGMENT_ALL_CARRIER_2023 a
+            left join T100_AIRPORT_CODE_LOOKUP_2023 b
+            on a.ORIGIN_AIRPORT_ID = b.CODE
+            left join T100_AIRPORT_CODE_LOOKUP_2023 c
+            on a.DEST_AIRPORT_ID = c.CODE
+            WHERE CAST(a.PASSENGERS AS real) > 0 
+            AND CAST(DEPARTURES_PERFORMED AS real) > 0
+            AND b.DESCRIPTION is not null
+            AND a.ORIGIN_COUNTRY_NAME = 'United States'
+            and c.DESCRIPTION IS NOT NULL
             """
 
             airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)
@@ -334,29 +334,28 @@ def select_airport_visual(selected_viz, selected_airport):
 
             ## SQL Queries to pull airports information ##
             airports_query = f"""
-            select [ORIGIN AIRPORT NAME],
-            [UNIQUE CARRIER NAME],
-            [TOTAL PASSENGERS],
-            [TOTAL DEPARTED FLIGHTS],
-            [TOTAL DESTINATION AIRPORTS]
-              from [T100_ORIGIN_AIRPORTS_AGGREGATE]
-            where [ORIGIN AIRPORT NAME] like '{selected_airport.replace("'", "''")}'
+            select "ORIGIN AIRPORT NAME",
+            "UNIQUE CARRIER NAME",
+            CAST("TOTAL PASSENGERS" AS real) as "TOTAL PASSENGERS",
+            CAST("TOTAL DEPARTED FLIGHTS" as real) as "TOTAL DEPARTED FLIGHTS",
+            CAST("TOTAL DESTINATION AIRPORTS" as real) as "TOTAL DESTINATION AIRPORTS"
+            from T100_ORIGIN_AIRPORTS_AGGREGATE
+            where "ORIGIN AIRPORT NAME" like '{selected_airport.replace("'", "''")}'
             """
 
             airports_unique_destination_query = f"""
-            select COUNT(distinct c.[DESCRIPTION]) as [TOTAL DESTINATION AIRPORTS]
-            FROM [T100_SEGMENT_ALL_CARRIER_2023] a
-            left join [T100_AIRPORT_CODE_LOOKUP_2023] b
-            on a.[ORIGIN_AIRPORT_ID] = b.[CODE]
-            left join [T100_AIRPORT_CODE_LOOKUP_2023] c
-            on a.[DEST_AIRPORT_ID] = c.[CODE]
-
-            WHERE CAST(a.[PASSENGERS] AS INT) > 0 
-            AND CAST([DEPARTURES_PERFORMED] AS INT) > 0
-            AND b.[DESCRIPTION] is not null
-            AND a.[ORIGIN_COUNTRY_NAME] = 'United States'
-            and c.[DESCRIPTION] IS NOT NULL
-            and b.[DESCRIPTION] = "{selected_airport.replace("'", "''")}"
+            select COUNT(distinct c.DESCRIPTION) as "TOTAL DESTINATION AIRPORTS"
+            FROM T100_SEGMENT_ALL_CARRIER_2023 a
+            left join T100_AIRPORT_CODE_LOOKUP_2023 b
+            on a.ORIGIN_AIRPORT_ID = b.CODE
+            left join T100_AIRPORT_CODE_LOOKUP_2023 c
+            on a.DEST_AIRPORT_ID = c.CODE
+            WHERE CAST(a.PASSENGERS AS real) > 0 
+            AND CAST(DEPARTURES_PERFORMED AS real) > 0
+            AND b.DESCRIPTION is not null
+            AND a.ORIGIN_COUNTRY_NAME = 'United States'
+            and c.DESCRIPTION IS NOT NULL
+            and b.DESCRIPTION like '{selected_airport.replace("'", "''")}'
             """
 
             ## Polars Queries to pull data from SQL database with queries defined above ##
@@ -437,16 +436,17 @@ def select_airport_visual(selected_viz, selected_airport):
 
         if selected_airport is None or selected_airport.strip() == '':
 
-            airports_passenger_flights_query = """select b.[MONTH_NAME_SHORT] as [MONTH], a.[MONTH] as [MONTH NUM], a.[YEAR], 
-                SUM(CAST(a.[PASSENGERS] AS INT)) as [TOTAL PASSENGERS],
-                SUM(CAST(a.[DEPARTURES_PERFORMED] AS INT)) as [TOTAL FLIGHTS] 
-                from [T100_SEGMENT_ALL_CARRIER_2023] a
-                left join [MONTHS_LOOKUP] b
-                on a.[MONTH] = b.[MONTH]
-                WHERE CAST(a.[PASSENGERS] AS INT) > 0 
-                AND CAST(a.[DEPARTURES_PERFORMED] AS INT) > 0
-                GROUP BY b.[MONTH_NAME_SHORT], a.[MONTH], a.[YEAR]
-                order by CAST(a.[MONTH] as int) asc
+            airports_passenger_flights_query = """
+            select b.MONTH_NAME_SHORT as "MONTH", a.MONTH as "MONTH NUM", a.YEAR, 
+            SUM(CAST(a.PASSENGERS AS real)) as "TOTAL PASSENGERS",
+            SUM(CAST(a.DEPARTURES_PERFORMED AS real)) as "TOTAL FLIGHTS" 
+            from T100_SEGMENT_ALL_CARRIER_2023 a
+            left join MONTHS_LOOKUP b
+            on a.MONTH = b.MONTH::text
+            WHERE CAST(a.PASSENGERS AS real) > 0 
+            AND CAST(a.DEPARTURES_PERFORMED AS real) > 0
+            GROUP BY b.MONTH_NAME_SHORT, a.MONTH, a.YEAR
+            order by CAST(a.MONTH as real) asc
             """
 
             airports_polars = pl.read_database_uri(query=airports_passenger_flights_query, uri=sqlite_path, engine='adbc')
@@ -509,7 +509,17 @@ def select_airport_visual(selected_viz, selected_airport):
         
         else:
 
-            airports_passenger_flights_query = f"""select * from T100_AIRPORT_ARRIVALS_DEPARTURES where [AIRPORT NAME] = '{selected_airport.replace("'", "''")}'"""
+            airports_passenger_flights_query = f"""
+            SELECT "AIRPORT NAME", 
+            "AIRPORT ID",
+            "month" as "MONTH",
+            "year" as "YEAR",
+            "ARRIVING PASSENGERS"::real,
+            "ARRIVING FLIGHTS"::real,
+            "DEPARTING PASSENGERS"::real,
+            "DEPARTING FLIGHTS"::real
+            FROM t100_airport_arrivals_departures
+            where "AIRPORT NAME" = '{selected_airport.replace("'", "''")}'"""
 
             airports_polars = pl.read_database_uri(query=airports_passenger_flights_query, uri=sqlite_path, engine='adbc')
 
