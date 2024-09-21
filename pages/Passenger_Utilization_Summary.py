@@ -5,22 +5,24 @@ import plotly_express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import os
+
 import dash_ag_grid as dag
 
 import dash
 
 import flask
 
-sqlite_path = 'sqlite://US_Flights_Analytics.db'
+sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
-pass_summ_table_query = """SELECT UNIQUE_CARRIER_NAME as [UNIQUE CARRIER NAME],
-       MONTH_NAME_SHORT AS [MONTH],
-       AIRCRAFT_DESC AS [AIRCRAFT TYPE],
-       NUMBER_OF_ROUTES AS [TOTAL ROUTES],
-       TOTAL_PASSENGERS AS [TOTAL PASSENGERS],
-       TOTAL_SEATS AS [TOTAL SEATS],
-       TOTAL_DEPARTURES AS [TOTAL DEPARTURES]
-  FROM T100_PASSENGER_UTILIZATION_SUMMARY"""
+pass_summ_table_query = """SELECT UNIQUE_CARRIER_NAME as "UNIQUE CARRIER NAME",
+MONTH_NAME_SHORT AS "MONTH",
+AIRCRAFT_DESC AS "AIRCRAFT TYPE",
+NUMBER_OF_ROUTES::real AS "TOTAL ROUTES",
+TOTAL_PASSENGERS::real AS "TOTAL PASSENGERS",
+TOTAL_SEATS::real AS "TOTAL SEATS",
+TOTAL_DEPARTURES::real AS "TOTAL DEPARTURES"
+FROM T100_PASSENGER_UTILIZATION_SUMMARY"""
 
 pass_summ_table = pl.read_database_uri(query=pass_summ_table_query, uri=sqlite_path,engine='adbc')
 

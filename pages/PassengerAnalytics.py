@@ -2,6 +2,7 @@ import polars as pl
 from dash import html, dcc, Input, Output, State, callback, ctx, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
+import os
 
 import dash
 
@@ -14,18 +15,21 @@ from .Passenger_Utilization_Carrier_Top10_Toggle import passengerUtilizationCarr
 
 dash.register_page(__name__, path='/PassengerAnalytics')
 
-sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 
 passenger_viz_list = ['Passengers By Carrier', 'Passenger Utilization By Carrier (%)', 'Passenger Utilization Details', 'Top 10 Passenger Routes By Carrier']
 
-analytics_df = pl.read_database_uri(query="SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 where CAST([PASSENGERS] as FLOAT) > 0 and CAST(SEATS as FLOAT) > 0 and CAST([DEPARTURES_PERFORMED] as FLOAT) > 0 ORDER BY [UNIQUE_CARRIER_NAME], ROUND(CAST([PASSENGERS] as FLOAT), 2) desc", uri=sqlite_path,engine='adbc')
-
-print(analytics_df.head(25))
+analytics_df = pl.read_database_uri(query="""
+                                    SELECT * FROM T100_SEGMENT_ALL_CARRIER_2023 
+                                    where CAST(PASSENGERS as real) > 0 
+                                    and CAST(SEATS as real) > 0 
+                                    and CAST(DEPARTURES_PERFORMED as real) > 0 
+                                    ORDER BY UNIQUE_CARRIER_NAME, ROUND(CAST(PASSENGERS as numeric), 2) desc""", uri=sqlite_path,engine='adbc')
 
 ## TODO: Idea for Carrier sorted list: Group by, then sort by Number of Passengers Flown descending, then select single column, to dicts, etc; 
-carrier_filter_list = sorted([val['UNIQUE_CARRIER_NAME'] for val in analytics_df.select(['UNIQUE_CARRIER_NAME']).unique().to_dicts()])
+carrier_filter_list = sorted([val['unique_carrier_name'] for val in analytics_df.select(['unique_carrier_name']).unique().to_dicts()])
 
 ## TODO: Remove Global variable when we have the sheet selection ##
 textResults = passengerText()
@@ -117,7 +121,16 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         pass_graph_desc = 'Provides the total number of passengers transported on flights throughout the entire year for the given carrier. (All Carriers shown if none provided)'
         
-        pass_carrier = pl.read_database_uri(query='SELECT * FROM T100_PASSENGERS_BY_CARRIER_2023', uri=sqlite_path,engine='adbc')
+        pass_carrier = pl.read_database_uri(query="""
+                                            SELECT unique_carrier_name as "UNIQUE_CARRIER_NAME", 
+                                            "month" as "MONTH", 
+                                            "year" as "YEAR", 
+                                            CAST("TOTAL PASSENGERS" as real) as "TOTAL PASSENGERS"
+                                            FROM t100_passengers_by_carrier_2023""", 
+                                            uri=sqlite_path,
+                                            engine='adbc')
+        
+        print(pass_carrier.head(500))
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
@@ -143,7 +156,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         
         else:
 
-            bar_figure = px.bar(pass_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier), x='MONTH', y='TOTAL PASSENGERS',
+            bar_figure = px.bar(pass_carrier.filter(pl.col("UNIQUE_CARRIER_NAME").eq(selected_carrier)), x='MONTH', y='TOTAL PASSENGERS',
                                 text_auto='.2s', title=f'Passengers Transported By Month: {selected_carrier}')
 
             bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4})
@@ -172,7 +185,16 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
-            pass_util_carrier = pl.read_database_uri(query='select a.* from T100_PASSENGER_UTILIZATION_TOTAL_2023 a left join [MONTHS_LOOKUP] b on a.[MONTH] = b.[MONTH_NAME_SHORT] order by CAST(b.[MONTH] as int) asc', uri=sqlite_path,engine='adbc')
+            pass_util_carrier = pl.read_database_uri(query="""
+                                                     select a.month as "MONTH",
+                                                     a.year as "YEAR",
+                                                     a."TOTAL SEATS"::real,
+                                                     a."TOTAL PASSENGERS"::real,
+                                                     a."PASSENGER UTILIZATION PCT"::real
+                                                     from T100_PASSENGER_UTILIZATION_TOTAL_2023 a 
+                                                     left join MONTHS_LOOKUP b 
+                                                     on a.MONTH = b.MONTH_NAME_SHORT::text 
+                                                     order by CAST(b.MONTH as numeric) asc""", uri=sqlite_path,engine='adbc')
 
             bar_figure = px.bar(pass_util_carrier.select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(),
                                 x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title='Passenger Seat Utilization: All Carriers',
@@ -218,7 +240,16 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         
         else:
 
-            pass_util_carrier = pl.read_database_uri(query='select a.* from T100_PASSENGER_UTILIZATION_BY_CARRIER_2023 a left join [MONTHS_LOOKUP] b on a.[MONTH] = b.[MONTH_NAME_SHORT] order by CAST(b.[MONTH] as int) asc', uri=sqlite_path,engine='adbc')
+            pass_util_carrier = pl.read_database_uri(query="""
+                                                     select a.unique_carrier_name as "UNIQUE_CARRIER_NAME",
+                                                     a."month" as "MONTH",
+                                                     a."year" as "YEAR",
+                                                     a."TOTAL SEATS"::real as "TOTAL SEATS",
+                                                     a."TOTAL PASSENGERS"::real as "TOTAL PASSENGERS",
+                                                     a."PASSENGER UTILIZATION PCT"::real as "PASSENGER UTILIZATION PCT" 
+                                                     from T100_PASSENGER_UTILIZATION_BY_CARRIER_2023 a 
+                                                     left join MONTHS_LOOKUP b on a.MONTH = b.MONTH_NAME_SHORT 
+                                                     order by CAST(b.MONTH as int) asc""", uri=sqlite_path,engine='adbc')
 
             bar_figure = px.bar(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']),
                                 x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title=f'Passenger Seat Utilization Pct: {selected_carrier}',
