@@ -2,6 +2,7 @@ import polars as pl
 from dash import html, dcc, Input, Output, State, callback, no_update
 import dash_bootstrap_components as dbc
 import plotly_express as px
+import os
 
 import dash
 
@@ -15,7 +16,7 @@ from .Routes_Scatter_Analysis_Carriers import generateScatterCarrierRouteLoadFac
 
 dash.register_page(__name__, path='/RouteAnalytics')
 
-sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
 routes_visual_list = ['Market Pairs: Revenue By Carrier', 'Airport Pairs: Passenger Util % By Carrier', 'Scatter Analysis: Load Factor By Carrier']
 
@@ -128,12 +129,13 @@ def routesVisualSetup(selected_viz):
 
     if selected_viz == 'Market Pairs: Revenue By Carrier':
 
-        airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = """select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
-            from T100_SEGMENT_ALL_CARRIER_2023_FARES
-            UNION
-            select DEST_AIRPORT_NAME as [AIRPORT_NAME]
-            from T100_SEGMENT_ALL_CARRIER_2023_FARES;"""
-            )
+        airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = """
+                                           select ORIGIN_AIRPORT_NAME as "AIRPORT_NAME"
+                                        from T100_SEGMENT_ALL_CARRIER_2023_FARES
+                                        UNION
+                                        select DEST_AIRPORT_NAME as "AIRPORT_NAME"
+                                        from T100_SEGMENT_ALL_CARRIER_2023_FARES"""
+                                           )
         
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
@@ -142,7 +144,10 @@ def routesVisualSetup(selected_viz):
     
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier':
 
-        airports_df = pl.read_database_uri(query="select AIRPORT_NAME from T100_AIRPORT_SELECTION;", engine='adbc', uri=sqlite_path)
+        airports_df = pl.read_database_uri(query="""
+                                           select AIRPORT_NAME as "AIRPORT_NAME" 
+                                           from T100_AIRPORT_SELECTION
+                                           """, engine='adbc', uri=sqlite_path)
 
         airport_filter_list = sorted([val['AIRPORT_NAME'] for val in airports_df.select(['AIRPORT_NAME']).unique().to_dicts()])
 
@@ -171,16 +176,16 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
 
     if selected_viz == 'Market Pairs: Revenue By Carrier' and selected_airport_1 != '':
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+        sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
         airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = f"""
-            select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
+            select ORIGIN_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_FARES
-            where DEST_AIRPORT_NAME == '{selected_airport_1}'
+            where dest_airport_name like '{selected_airport_1}'
             UNION
-            select DEST_AIRPORT_NAME as [AIRPORT_NAME]
+            select DEST_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_FARES
-            where ORIGIN_AIRPORT_NAME == '{selected_airport_1}';
+            where origin_airport_name like '{selected_airport_1}'
             """
         )
         
@@ -190,18 +195,18 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
     
     if selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and selected_airport_1 != '':
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+        sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
         airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = f"""
-            select ORIGIN_AIRPORT_NAME as [AIRPORT_NAME]
+            select ORIGIN_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-            where DEST_AIRPORT_NAME == '{selected_airport_1}'
-            and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0
+            where dest_airport_name like '{selected_airport_1}'
+            and CAST(Passengers as real) > 0 AND CAST(SEATS AS real) > 0 and CAST(departures_performed as real) > 0
             UNION
-            select DEST_AIRPORT_NAME as [AIRPORT_NAME]
+            select DEST_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-            where ORIGIN_AIRPORT_NAME == '{selected_airport_1}'
-            and CAST(Passengers as int) > 0 AND CAST(SEATS AS INT) > 0 and CAST(departures_performed as int) > 0;
+            where origin_airport_name like '{selected_airport_1}'
+            and CAST(Passengers as real) > 0 AND CAST(SEATS AS real) > 0 and CAST(departures_performed as real) > 0
             """
         )
 
@@ -239,7 +244,7 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
     
     elif selected_viz == 'Market Pairs: Revenue By Carrier' and (selected_airport_2 != '' or selected_airport_2.strip() != ''):
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+        sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
         return generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airport_2, sqlite_path), no_update, no_update
 
@@ -251,7 +256,7 @@ def generateGraph(selected_viz, selected_airport_1, selected_airport_2):
     
     elif selected_viz == 'Airport Pairs: Passenger Util % By Carrier' and (selected_airport_2 != '' or selected_airport_2.strip() != ''):
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+        sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
         return generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, selected_airport_2, sqlite_path), {'airport-name-1': f"{selected_airport_1}"}, {'airport-name-2': f"{selected_airport_2}"}
 
@@ -303,7 +308,7 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
 
     selected_airport_2 = stored_airport_2['airport-name-2']
 
-    sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+    sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
     if selected_viz == 'Airport Pairs: Passenger Util % By Carrier':
 
@@ -316,63 +321,63 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
                 with cte as (
 
                 select UNIQUE_CARRIER_NAME, 
-                cast(MONTH AS INT) AS [MONTH],
-                SUM(CAST(PASSENGERS AS INT)) AS [Total Passengers],
-                SUM(CAST(SEATS AS INT)) AS [Total Seats],
-                SUM(CAST([DEPARTURES_PERFORMED] AS INT)) AS [Total Flights]
+                cast(MONTH AS real) AS "MONTH",
+                SUM(CAST(PASSENGERS AS real)) AS "Total Passengers",
+                SUM(CAST(SEATS AS real)) AS "Total Seats",
+                SUM(CAST(departures_performed AS real)) AS "Total Flights"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1
-                group by  UNIQUE_CARRIER_NAME,CAST(MONTH as int)
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(departures_performed AS real) >= 1
+                group by UNIQUE_CARRIER_NAME, CAST(MONTH as real)
 
                 ), 
 
 
                 grouped_totals as (
                 select UNIQUE_CARRIER_NAME,
-                SUM(CAST(PASSENGERS AS INT)) as [TOTAL_PASSENGERS],
-                SUM(CAST(PASSENGERS AS FLOAT)) / (select SUM(CAST([PASSENGERS] AS FLOAT)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
+                SUM(CAST(PASSENGERS AS real)) as "TOTAL_PASSENGERS",
+                SUM(CAST(PASSENGERS AS double precision)) / (select SUM(CAST(PASSENGERS AS double precision)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1) as [PCT_ANALYSIS]
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(DEPARTURES_PERFORMED AS real) >= 1) as "PCT_ANALYSIS"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(DEPARTURES_PERFORMED AS real) >= 1
                 group by UNIQUE_CARRIER_NAME
                 )
 
 
                 select
-                CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as [Unique Carrier Simplified],
-                CAST(cte.[Month] as int) as [Month Number],
-                mlu.MONTH_NAME_SHORT as [Month],
-                SUM(CAST(cte.[Total Passengers] as int)) as [Total Passengers],
-                SUM(CAST(cte.[Total Seats] as int)) as [Total Seats],
-                SUM(CAST(cte.[Total Flights] as int)) as [Total Flights]
+                CASE WHEN CAST(gt."PCT_ANALYSIS" as double precision) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as "Unique Carrier Simplified",
+                CAST(cte."MONTH" as real) as "Month Number",
+                mlu.MONTH_NAME_SHORT as "Month",
+                SUM(CAST(cte."Total Passengers" as real)) as "Total Passengers",
+                SUM(CAST(cte."Total Seats" as real)) as "Total Seats",
+                SUM(CAST(cte."Total Flights" as real)) as "Total Flights"
 
                 from cte
                 left join grouped_totals gt
                 on cte.UNIQUE_CARRIER_NAME = gt.UNIQUE_CARRIER_NAME
 
                 left join MONTHS_LOOKUP mlu
-                on cte.[Month] = mlu.[Month]
+                on cte."MONTH" = mlu.month
 
-                group by CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
-                CAST(cte.[Month] as int),
-                mlu.[MONTH_NAME_SHORT]
+                group by CASE WHEN CAST(gt."PCT_ANALYSIS" as double precision) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
+                CAST(cte."MONTH" as real),
+                mlu.month_name_short
 
 
             """
@@ -414,65 +419,65 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
                 with cte as (
 
                 select UNIQUE_CARRIER_NAME, 
-                cast(MONTH AS INT) AS [MONTH],
-                SUM(CAST(PASSENGERS AS INT)) AS [Total Passengers],
-                SUM(CAST(SEATS AS INT)) AS [Total Seats],
-                SUM(CAST([DEPARTURES_PERFORMED] AS INT)) AS [Total Flights]
+                cast(MONTH AS real) AS "MONTH",
+                SUM(CAST(PASSENGERS AS real)) AS "Total Passengers",
+                SUM(CAST(SEATS AS real)) AS "Total Seats",
+                SUM(CAST(departures_performed AS real)) AS "Total Flights"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1
-                group by  UNIQUE_CARRIER_NAME,CAST(MONTH as int)
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(departures_performed AS real) >= 1
+                group by  UNIQUE_CARRIER_NAME,CAST(MONTH as real)
 
                 ), 
 
 
                 grouped_totals as (
                 select UNIQUE_CARRIER_NAME,
-                SUM(CAST(PASSENGERS AS INT)) as [TOTAL_PASSENGERS],
-                SUM(CAST(PASSENGERS AS FLOAT)) / (select SUM(CAST([PASSENGERS] AS FLOAT)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
+                SUM(CAST(PASSENGERS AS real)) as "TOTAL_PASSENGERS",
+                SUM(CAST(PASSENGERS AS double precision)) / (select SUM(CAST(PASSENGERS AS double precision)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1) as [PCT_ANALYSIS]
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(departures_performed AS real) >= 1) as "PCT_ANALYSIS"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
                 WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
-                AND CAST(PASSENGERS AS INT) >= 1
-                and CAST([DEPARTURES_PERFORMED] AS INT) >= 1
+                AND CAST(PASSENGERS AS real) >= 1
+                and CAST(departures_performed AS real) >= 1
                 group by UNIQUE_CARRIER_NAME
                 )
 
 
                 select
-                CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as [Unique Carrier Simplified],
-                CAST(cte.[Month] as int) as [Month Number],
-                mlu.MONTH_NAME_SHORT as [Month],
-                SUM(CAST(cte.[Total Passengers] as int)) as [Total Passengers],
-                SUM(CAST(cte.[Total Seats] as int)) as [Total Seats],
-                SUM(CAST(cte.[Total Flights] as int)) as [Total Flights]
+                CASE WHEN CAST(gt."PCT_ANALYSIS" as double precision) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end as "Unique Carrier Simplified",
+                CAST(cte."MONTH" as real) as "Month Number",
+                mlu.MONTH_NAME_SHORT as "Month",
+                SUM(CAST(cte."Total Passengers" as real)) as "Total Passengers",
+                SUM(CAST(cte."Total Seats" as real)) as "Total Seats",
+                SUM(CAST(cte."Total Flights" as real)) as "Total Flights"
 
                 from cte
                 left join grouped_totals gt
                 on cte.UNIQUE_CARRIER_NAME = gt.UNIQUE_CARRIER_NAME
 
                 left join MONTHS_LOOKUP mlu
-                on cte.[Month] = mlu.[Month]
+                on cte."MONTH" = mlu.month 
 
-                where CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end = '{selected_carrier}'
+                where CASE WHEN CAST(gt."PCT_ANALYSIS" as double precision) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end = '{selected_carrier}'
 
-                group by CASE WHEN CAST(gt.[PCT_ANALYSIS] as float) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
-                CAST(cte.[Month] as int),
-                mlu.[MONTH_NAME_SHORT]    
+                group by CASE WHEN CAST(gt."PCT_ANALYSIS" as double precision) < 0.01 THEN 'Other Carriers' else cte.UNIQUE_CARRIER_NAME end,
+                CAST(cte."MONTH" as real),
+                mlu.month_name_short    
 
             """
 
