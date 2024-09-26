@@ -125,7 +125,7 @@ layout = html.Div([dbc.Container([
 )
 def routesVisualSetup(selected_viz):
 
-    sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+    sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
     if selected_viz == 'Market Pairs: Revenue By Carrier':
 
@@ -530,7 +530,7 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
         
     elif selected_viz == 'Scatter Analysis: Load Factor By Carrier':
 
-        sqlite_path = 'sqlite:///US_Flights_Analytics.db'
+        sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
         print(selected_carrier)
 
