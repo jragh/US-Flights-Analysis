@@ -12,52 +12,57 @@ def generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airpo
 
     ## This is the SQL query to pull the estimated revenue information for 2 airports ##
     ## This query is also saved in the associated .sql file ##
-    routes_carriers_revenue_query = f"""with cte as (
+    routes_carriers_revenue_query = f"""
 
+        with cte as (
+ 
         select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
         where ORIGIN_AIRPORT_NAME = '{selected_airport_1}'
         AND DEST_AIRPORT_NAME = '{selected_airport_2}'
-        and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
+        and CAST(PASSENGERS AS real) > 0 and CAST(DEPARTURES_PERFORMED AS real) > 0
 
         UNION
 
         select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
         where ORIGIN_AIRPORT_NAME = '{selected_airport_2}'
         AND DEST_AIRPORT_NAME = '{selected_airport_1}'
-        and CAST(PASSENGERS AS INT) > 0 and CAST(DEPARTURES_PERFORMED AS INT) > 0
+        and CAST(PASSENGERS AS real) > 0 and CAST(DEPARTURES_PERFORMED AS real) > 0
 
-        ),
+        )
+        ,
 
         split_rank as (
 
         select UNIQUE_CARRIER_NAME, 
-        SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) as [Aggregate Revenue],
-        CASE WHEN SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) < ((select SUM(CAST(PASSENGERS AS INT) * CAST(AVERAGE_FARE AS FLOAT)) from cte) / 100.00)
-        then 'Other Carriers' else UNIQUE_CARRIER_NAME end as [UNIQUE_CARRIER_SIMPLIFIED]
+        SUM(CAST(PASSENGERS AS real) * CAST(AVERAGE_FARE AS double precision)) as "Aggregate Revenue",
+        CASE WHEN SUM(CAST(PASSENGERS AS real) * CAST(AVERAGE_FARE AS double precision)) < ((select SUM(CAST(PASSENGERS AS real) * CAST(AVERAGE_FARE AS double precision)) from cte) / 100.00)
+        then 'Other Carriers' else UNIQUE_CARRIER_NAME end as "UNIQUE_CARRIER_SIMPLIFIED"
         from cte
         group by UNIQUE_CARRIER_NAME
 
         )
 
         select cte.UNIQUE_CARRIER_NAME, 
-        sr.[UNIQUE_CARRIER_SIMPLIFIED] as [Carrier Name],
-        aclu.[Description] as AIRCRAFT_TYPE,
-        AVG(cast(cte.AVERAGE_FARE as float)) AS [Average Fare], 
-        SUM(CAST(cte.PASSENGERS AS INT) * CAST(cte.AVERAGE_FARE AS FLOAT)) as [Total Revenue],
-        SUM(CAST(cte.PASSENGERS AS INT)) as [Total Passengers],
-        SUM(CAST(cte.DEPARTURES_PERFORMED AS INT)) AS [Total Flights]
+        sr."UNIQUE_CARRIER_SIMPLIFIED" as "Carrier Name",
+        aclu.description as "AIRCRAFT_TYPE",
+        AVG(cast(cte.AVERAGE_FARE as double precision)) AS "Average Fare", 
+        SUM(CAST(cte.PASSENGERS AS real) * CAST(cte.AVERAGE_FARE AS double precision)) as "Total Revenue",
+        SUM(CAST(cte.PASSENGERS AS real)) as "Total Passengers",
+        SUM(CAST(cte.DEPARTURES_PERFORMED AS real)) AS "Total Flights"
         from cte
         
         left join split_rank sr
         on cte.UNIQUE_CARRIER_NAME = sr.UNIQUE_CARRIER_NAME
 
         left join T100_SEGMENT_AIRCRAFT_TYPE_LOOKUP_2023 aclu
-        on cte.AIRCRAFT_TYPE = aclu.Code
+        on cte.AIRCRAFT_TYPE = aclu.code
 
-        GROUP BY cte.UNIQUE_CARRIER_NAME, 
-        sr.[UNIQUE_CARRIER_SIMPLIFIED],
-        aclu.[Description]
-        ORDER BY CAST(sr.[Aggregate Revenue] as int) asc;
+        GROUP BY cte.UNIQUE_CARRIER_NAME,
+        sr."Aggregate Revenue",
+        sr."UNIQUE_CARRIER_SIMPLIFIED",
+        aclu.description
+        
+        ORDER BY CAST(sr."Aggregate Revenue" as double precision) asc
         
     """
 

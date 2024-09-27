@@ -2,7 +2,7 @@
 testFile.txt
 
 ## Never version control the database ##
-*.db
+US_Flights_OnTime.db
 
 ## Never include any log files
 *.log
@@ -11,3 +11,5 @@ venv
 *.pyc 
 .DS_Store 
 .env
+
+testingfile.py

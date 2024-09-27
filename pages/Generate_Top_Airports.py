@@ -17,43 +17,41 @@ def generateAirportsTopTen(selected_viz, selected_airport, sqlite_path):
 
         with origins as (
 
-        select [ORIGIN_AIRPORT_NAME],
-        SUM(CAST([PASSENGERS] AS INT)) as [TOTAL ORIGIN PASSENGERS]
+        select ORIGIN_AIRPORT_NAME,
+        SUM(CAST(PASSENGERS AS real)) as "TOTAL ORIGIN PASSENGERS"
         from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-        where CAST([PASSENGERS] as int) > 0 
-        and CAST([DEPARTURES_PERFORMED] as int) > 0
-        and [DEST_AIRPORT_NAME] = '{selected_airport}'
-        group by [ORIGIN_AIRPORT_NAME]),
-
-        destinations as (
+        where CAST(PASSENGERS as real) > 0 
+        and CAST(DEPARTURES_PERFORMED as real) > 0
+        and DEST_AIRPORT_NAME = '{selected_airport}'
+        group by ORIGIN_AIRPORT_NAME),
         
-        select [DEST_AIRPORT_NAME],
-        SUM(CAST([PASSENGERS] AS INT)) as [TOTAL DEST PASSENGERS]
+        destinations as (
+        select DEST_AIRPORT_NAME,
+        SUM(CAST(PASSENGERS AS real)) as "TOTAL DEST PASSENGERS"
         from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-        where CAST([PASSENGERS] as int) > 0 
-        and CAST([DEPARTURES_PERFORMED] as int) > 0
-        and [ORIGIN_AIRPORT_NAME] = '{selected_airport}'
-        group by [DEST_AIRPORT_NAME]
-
+        where CAST(PASSENGERS as real) > 0 
+        and CAST(DEPARTURES_PERFORMED as real) > 0
+        and ORIGIN_AIRPORT_NAME = '{selected_airport}'
+        group by DEST_AIRPORT_NAME
         ),
 
-        window as (
+        wndow as (
         
-        select COALESCE(o.[ORIGIN_AIRPORT_NAME], d.[DEST_AIRPORT_NAME]) as [AIRPORT NAME],
-        COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) as [ARRIVING PASSENGERS],
-        COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0) as [DEPARTING PASSENGERS],
-        (COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) as [TOTAL PASSENGERS],
+        select COALESCE(o.ORIGIN_AIRPORT_NAME, d.DEST_AIRPORT_NAME) as "AIRPORT NAME",
+        COALESCE(cast(o."TOTAL ORIGIN PASSENGERS" as real), 0) as "ARRIVING PASSENGERS",
+        COALESCE(cast(d."TOTAL DEST PASSENGERS" as real), 0) as "DEPARTING PASSENGERS",
+        (COALESCE(cast(o."TOTAL ORIGIN PASSENGERS" as real), 0) + COALESCE(cast(d."TOTAL DEST PASSENGERS" as real), 0)) as "TOTAL PASSENGERS",
 
-        ROW_NUMBER() OVER (order by (COALESCE(cast(o.[TOTAL ORIGIN PASSENGERS] as int), 0) + COALESCE(cast(d.[TOTAL DEST PASSENGERS] as int), 0)) desc) as [PASSENGER RANKING]
+        ROW_NUMBER() OVER (order by (COALESCE(cast(o."TOTAL ORIGIN PASSENGERS" as real), 0) + COALESCE(cast(d."TOTAL DEST PASSENGERS" as real), 0)) desc) as "PASSENGER RANKING"
 
 
         from origins o
         FULL OUTER JOIN destinations d
-        on o.[ORIGIN_AIRPORT_NAME] = d.[DEST_AIRPORT_NAME])
+        on o.ORIGIN_AIRPORT_NAME = d.DEST_AIRPORT_NAME)
 
-        select * from window
-        where [PASSENGER RANKING] <= 10
-        order by CAST([TOTAL PASSENGERS] as int) asc;
+        select * from wndow
+        where "PASSENGER RANKING" <= 10
+        order by CAST("TOTAL PASSENGERS" as real) asc
 
     """
 
