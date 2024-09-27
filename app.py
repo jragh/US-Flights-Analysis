@@ -29,6 +29,7 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 # textResults = passengerText()
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True, suppress_callback_exceptions=True)
+server = app.server
 
 ## dash.register_page(__name__, path='/')
 
