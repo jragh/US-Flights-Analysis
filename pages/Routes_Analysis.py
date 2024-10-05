@@ -14,7 +14,11 @@ from .Routes_Carriers_Passenger_Utilization import generateRouteCarrierPassenger
 
 from .Routes_Scatter_Analysis_Carriers import generateScatterCarrierRouteLoadFactor, updateScatterCarrierRouteLoadFactor
 
-dash.register_page(__name__, path='/RouteAnalytics')
+dash.register_page(__name__, 
+                   path='/RouteAnalytics', 
+                   title="US Flight Analysis - Route Analytics", 
+                   description='A deeper dive on Market Pairs and Air Travel Routes across the United States.',
+                   image="RoutesAnalysisMetaImage.png")
 
 sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
