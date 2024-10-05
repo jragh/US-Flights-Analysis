@@ -3,6 +3,8 @@ from dash import html, dcc, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly_express as px
 
+from flask import Flask, redirect
+
 import dash
 
 # from Passenger_Utilization_Summary import summary
@@ -28,8 +30,15 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 # ## TODO: Remove Global variable when we have the sheet selection ##
 # textResults = passengerText()
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True, suppress_callback_exceptions=True)
-server = app.server
+server = Flask(__name__)
+
+@server.route('/')
+def index_redirect():
+    return redirect('/Home')
+
+
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.ZEPHYR, dbc_css, dbc.icons.BOOTSTRAP], use_pages=True, suppress_callback_exceptions=True, server=server)
+
 
 ## dash.register_page(__name__, path='/')
 
@@ -59,7 +68,8 @@ def pathnameCallback(path):
     pathname_pill_pair = {'/Home': 'Home', 
                           '/PassengerAnalytics': 'Passenger Analytics', 
                           '/AirportAnalytics' : 'Airport Analytics', 
-                          '/RouteAnalytics': 'Route Analytics'
+                          '/RouteAnalytics': 'Route Analytics',
+                          "/": 'Home'
                           }
 
     return_children = [
