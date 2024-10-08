@@ -11,7 +11,11 @@ from .Airports_Analysis_Cards import generateSummaryCard
 
 from .Generate_Top_Airports import generateAirportsTopTen
 
-dash.register_page(__name__, path='/AirportAnalytics')
+dash.register_page(__name__, 
+                   path='/AirportAnalytics',
+                   title="US Flight Analysis - Route Analytics",
+                   description="Explore data and stats about Airports across the United States.",
+                   image="AirportAnalysisMetaImage.png")
 
 textResults = airport_text()
 
