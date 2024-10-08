@@ -11,7 +11,11 @@ from .Airports_Analysis_Cards import generateSummaryCard
 
 from .Generate_Top_Airports import generateAirportsTopTen
 
-dash.register_page(__name__, path='/AirportAnalytics')
+dash.register_page(__name__, 
+                   path='/AirportAnalytics',
+                   title="US Flight Analysis - Route Analytics",
+                   description="Explore data and stats about Airports across the United States.",
+                   image="AirportAnalysisMetaImage.png")
 
 textResults = airport_text()
 
@@ -188,7 +192,7 @@ def select_airport_visual(selected_viz, selected_airport):
                 CAST("TOTAL DEPARTED FLIGHTS" AS real) as "TOTAL DEPARTED FLIGHTS", 
                 CAST("TOTAL DESTINATION AIRPORTS" AS real) as "TOTAL DESTINATION AIRPORTS"
                 FROM t100_origin_airports_aggregate
-                where "ORIGIN AIRPORT NAME" = '{selected_airport}'
+                where "ORIGIN AIRPORT NAME" = '{selected_airport.replace("'", "''")}'
             """
 
             airports_polars = pl.read_database_uri(engine='adbc', query=airports_query, uri=sqlite_path)

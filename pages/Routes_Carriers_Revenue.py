@@ -17,15 +17,15 @@ def generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airpo
         with cte as (
  
         select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
-        where ORIGIN_AIRPORT_NAME = '{selected_airport_1}'
-        AND DEST_AIRPORT_NAME = '{selected_airport_2}'
+        where ORIGIN_AIRPORT_NAME = '{selected_airport_1.replace("'", "''")}'
+        AND DEST_AIRPORT_NAME = '{selected_airport_2.replace("'", "''")}'
         and CAST(PASSENGERS AS real) > 0 and CAST(DEPARTURES_PERFORMED AS real) > 0
 
         UNION
 
         select * from T100_SEGMENT_ALL_CARRIER_2023_FARES
-        where ORIGIN_AIRPORT_NAME = '{selected_airport_2}'
-        AND DEST_AIRPORT_NAME = '{selected_airport_1}'
+        where ORIGIN_AIRPORT_NAME = '{selected_airport_2.replace("'", "''")}'
+        AND DEST_AIRPORT_NAME = '{selected_airport_1.replace("'", "''")}'
         and CAST(PASSENGERS AS real) > 0 and CAST(DEPARTURES_PERFORMED AS real) > 0
 
         )

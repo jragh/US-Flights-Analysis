@@ -13,7 +13,11 @@ from .flightsNavbar import navbar_named
 from .Passenger_Utilization_Carrier_Routes import passengerUtilizationCarrierRoutes
 from .Passenger_Utilization_Carrier_Top10_Toggle import passengerUtilizationCarrierTopTenRoutes, passengerCountsCarrierTopTenRoutes
 
-dash.register_page(__name__, path='/PassengerAnalytics')
+dash.register_page(__name__, 
+                   path='/PassengerAnalytics',
+                   title="US Flight Analysis - Passenger Analytics",
+                   description="Discover insights on Passenger Airline travel throughout the United States using Passenger and Available Seat counts!",
+                   image="passenger_analytics.png")
 
 sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
