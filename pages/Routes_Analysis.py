@@ -185,11 +185,11 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
         airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = f"""
             select ORIGIN_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_FARES
-            where dest_airport_name like '{selected_airport_1}'
+            where dest_airport_name like '{selected_airport_1.replace("'", "''")}'
             UNION
             select DEST_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_FARES
-            where origin_airport_name like '{selected_airport_1}'
+            where origin_airport_name like '{selected_airport_1.replace("'", "''")}'
             """
         )
         
@@ -204,12 +204,12 @@ def routesActivateSecondAirport(selected_viz, selected_airport_1):
         airports_df = pl.read_database_uri(engine='adbc', uri=sqlite_path, query = f"""
             select ORIGIN_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-            where dest_airport_name like '{selected_airport_1}'
+            where dest_airport_name like '{selected_airport_1.replace("'", "''")}'
             and CAST(Passengers as real) > 0 AND CAST(SEATS AS real) > 0 and CAST(departures_performed as real) > 0
             UNION
             select DEST_AIRPORT_NAME as "AIRPORT_NAME"
             from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
-            where origin_airport_name like '{selected_airport_1}'
+            where origin_airport_name like '{selected_airport_1.replace("'", "''")}'
             and CAST(Passengers as real) > 0 AND CAST(SEATS AS real) > 0 and CAST(departures_performed as real) > 0
             """
         )
@@ -332,8 +332,8 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(departures_performed AS real) >= 1
@@ -347,16 +347,16 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
                 SUM(CAST(PASSENGERS AS real)) as "TOTAL_PASSENGERS",
                 SUM(CAST(PASSENGERS AS double precision)) / (select SUM(CAST(PASSENGERS AS double precision)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(DEPARTURES_PERFORMED AS real) >= 1) as "PCT_ANALYSIS"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(DEPARTURES_PERFORMED AS real) >= 1
@@ -430,8 +430,8 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(departures_performed AS real) >= 1
@@ -445,16 +445,16 @@ def changeRoutesGraphVizTwo(selected_carrier, selected_viz, stored_airport_1, st
                 SUM(CAST(PASSENGERS AS real)) as "TOTAL_PASSENGERS",
                 SUM(CAST(PASSENGERS AS double precision)) / (select SUM(CAST(PASSENGERS AS double precision)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(departures_performed AS real) >= 1) as "PCT_ANALYSIS"
 
                 FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
 
-                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+                WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+                and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
                 and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
                 AND CAST(PASSENGERS AS real) >= 1
                 and CAST(departures_performed AS real) >= 1

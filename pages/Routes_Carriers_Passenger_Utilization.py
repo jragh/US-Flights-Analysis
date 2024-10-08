@@ -21,8 +21,8 @@ def generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, s
         SUM(CAST(SEATS AS real)) AS "Total Seats",
         SUM(CAST(DEPARTURES_PERFORMED AS real)) AS "Total Flights"
         FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
-        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
         and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
         AND CAST(PASSENGERS AS real) >= 1
         and CAST(DEPARTURES_PERFORMED AS real) >= 1
@@ -33,14 +33,14 @@ def generateRouteCarrierPassengerUtilization(selected_viz, selected_airport_1, s
         select UNIQUE_CARRIER_NAME,
         SUM(CAST(PASSENGERS AS real)) as "TOTAL_PASSENGERS",
         SUM(CAST(PASSENGERS AS double precision)) / (select SUM(CAST(PASSENGERS AS double precision)) FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
-        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
         and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
         AND CAST(PASSENGERS AS real) >= 1
         and CAST(DEPARTURES_PERFORMED AS real) >= 1) as "PCT_ANALYSIS"
         FROM T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP 
-        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
-        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1}', '{selected_airport_2}')
+        WHERE DEST_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
+        and ORIGIN_AIRPORT_NAME in ('{selected_airport_1.replace("'", "''")}', '{selected_airport_2.replace("'", "''")}')
         and ORIGIN_AIRPORT_NAME <> DEST_AIRPORT_NAME
         AND CAST(PASSENGERS AS real) >= 1
         and CAST(DEPARTURES_PERFORMED AS real) >= 1

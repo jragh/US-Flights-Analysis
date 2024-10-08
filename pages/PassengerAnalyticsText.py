@@ -20,7 +20,7 @@ def passengerText():
                 html.Span(
                     html.H1('ANALYTICS'), className = 'header-span'
                 )
-            ], gap=1, style={'textAlign': '-webkit-center'}, className="my-4"
+            ], gap=1, style={'textAlign': '-webkit-center'}, className="my-4 align-items-center"
             ),
 
             html.Div([
