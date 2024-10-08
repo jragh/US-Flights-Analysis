@@ -22,7 +22,7 @@ def generateAirportsTopTen(selected_viz, selected_airport, sqlite_path):
         from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
         where CAST(PASSENGERS as real) > 0 
         and CAST(DEPARTURES_PERFORMED as real) > 0
-        and DEST_AIRPORT_NAME = '{selected_airport}'
+        and DEST_AIRPORT_NAME = '{selected_airport.replace("'", "''")}'
         group by ORIGIN_AIRPORT_NAME),
         
         destinations as (
@@ -31,7 +31,7 @@ def generateAirportsTopTen(selected_viz, selected_airport, sqlite_path):
         from T100_SEGMENT_ALL_CARRIER_2023_AIRPORTS_LOOKUP
         where CAST(PASSENGERS as real) > 0 
         and CAST(DEPARTURES_PERFORMED as real) > 0
-        and ORIGIN_AIRPORT_NAME = '{selected_airport}'
+        and ORIGIN_AIRPORT_NAME = '{selected_airport.replace("'", "''")}'
         group by DEST_AIRPORT_NAME
         ),
 
