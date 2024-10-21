@@ -486,3 +486,9 @@
     position: absolute;
 
 }
+
+.popover-body {
+
+    padding: 0px;
+
+}

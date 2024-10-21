@@ -1,0 +1,47 @@
+.ag-theme-quartz.ag-theme-custom-theme {
+
+    --ag-background-color: "#10172F";
+    --ag-border-color: "#2CA5F1";
+    --ag-border-radius: 8px;
+    --ag-browser-color-scheme: "dark";
+    --ag-column-border: true;
+    --ag-font-family: "Lato";
+    --ag-font-size: "12px";
+    --ag-foreground-color: "#FFFFFF";
+    --ag-header-font-size: "14px";
+    --ag-header-font-weight: 700;
+    --ag-header-vertical-padding-scale: 1;
+    --ag-odd-row-background-color: "#293752";
+    --ag-spacing: "8px";
+    --ag-wrapper-border-radius: "16px";
+    --ag-chrome-background-color-ref: "foregroundColor";
+    --ag-chrome-background-color-mix: 0.07;
+    --ag-chrome-background-color-onto: "backgroundColor";
+}
+
+
+/* import { themeQuartz } from '@ag-grid-community/theming';
+
+// to use myTheme in an application, pass it to the theme grid option
+const myTheme = themeQuartz
+	.withParams({
+        backgroundColor: "#10172F",
+        borderColor: "#2CA5F14A",
+        borderRadius: "8px",
+        browserColorScheme: "dark",
+        chromeBackgroundColor: {
+            ref: "foregroundColor",
+            mix: 0.07,
+            onto: "backgroundColor"
+        },
+        columnBorder: true,
+        fontFamily: "inherit",
+        fontSize: "12px",
+        foregroundColor: "#FFF",
+        headerFontSize: 14,
+        headerFontWeight: 700,
+        headerVerticalPaddingScale: 1,
+        oddRowBackgroundColor: "#293752",
+        spacing: "8px",
+        wrapperBorderRadius: "16px"
+    }); */
