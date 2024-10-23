@@ -45,7 +45,7 @@ pills_array = [
               style={'backgroundColor': '#E89C31', 'color': '#0B2838'}),
 
     dbc.Popover([
-            dbc.PopoverHeader([html.Strong('ORLANDO, FL (MCO) AND ATLANTA, GA (ATL)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
+            dbc.PopoverHeader([html.Strong('ATLANTA, GA (ATL) AND ORLANDO, FL (MCO)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
             dbc.PopoverBody(children=[
 
                 html.Span([
@@ -77,7 +77,7 @@ pills_array = [
 
     dbc.Popover([
 
-        dbc.PopoverHeader([html.Strong('NEW YORK, NY (JFK) AND LOS ANGELES, CA (LAX)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
+        dbc.PopoverHeader([html.Strong('LOS ANGELES, CA (LAX) AND NEW YORK, NY (JFK)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
         dbc.PopoverBody(children=[
 
             html.Span([
@@ -107,7 +107,7 @@ pills_array = [
 
     dbc.Popover([
 
-        dbc.PopoverHeader([html.Strong('LOS ANGELES, CA (LAX) AND LAS VEGAS, NV (LAS)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
+        dbc.PopoverHeader([html.Strong('LAS VEGAS, NV (LAS) AND LOS ANGELES, CA (LAX)')], style={'fontWeight': 'bold', 'fontSize': '90%'}),
         dbc.PopoverBody(children=[
 
             html.Span([
@@ -312,11 +312,3 @@ pills_array = [
                               
 
 ]
-
-
-
-#html.Span('#1: LONDON, UK (LHR) AND NEW YORK, NY (JFK)', className='example_head_1'),
-#html.Span('#2: ATLANTA, GA (ATL) AND ORLANDO, FL (MCO)', className='example_hea
-#html.Span('#3: LOS ANGELES, CA (LAX) AND NEW YORK, NY (JFK)', className='example_hea
-#html.Span('#4: LAS VEGAS, NV (LAS) AND LOS ANGELES, CA (LAX)', className='example_hea
-#html.Span('#5: LOS ANGELES, CA (LAX) AND SAN FRANCISCO, CA (SFO)', className='example_head_5')
