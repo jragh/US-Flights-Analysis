@@ -36,17 +36,13 @@ layout = html.Div([
                             html.Hr(className='my-2'),
                             html.Small('''Explore this Web app to discover key data relating to US passenger flights.
                                    Available themes in the app include Passenger, Airport, Carrier, Flight Route, and Flight Delay Data.
-                                   See below for an example on the type of information you can explore: ''', className='mb-2', id='airports-graph-desc',
+                                   See below for an example on the type of information you can explore: ''', className='mb-3', id='airports-graph-desc',
                                    style={'color': 'rgb(199, 199, 200)'}),
 
-                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='my-3 text-center'),
+                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='mt-4 mb-3 text-center'),
 
                             ## First Row will have 3 pills
-                            dbc.Container(pills_array, className='mt-2 mb-4 d-flex flex-row justify-content-center flex-wrap align-items-center'),
-
-                            dbc.Row([]),
-
-                            dbc.Row([])
+                            dbc.Container(pills_array, className='mt-2 d-flex flex-row justify-content-center flex-wrap align-items-center')
 
                             # html.Span([
 
