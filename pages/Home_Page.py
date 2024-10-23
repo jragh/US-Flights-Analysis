@@ -1,7 +1,7 @@
 from dash import html, dcc, Input, Output, State, callback, no_update, register_page
 import dash_bootstrap_components as dbc
 
-from .Home_Page_AG_Grid import home_page_grid
+from .Home_Page_Pills import pills_array
 
 register_page(__name__, path='/Home')
 
@@ -39,45 +39,14 @@ layout = html.Div([
                                    See below for an example on the type of information you can explore: ''', className='mb-2', id='airports-graph-desc',
                                    style={'color': 'rgb(199, 199, 200)'}),
 
-                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='my-3'),
+                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='my-3 text-center'),
 
                             ## First Row will have 3 pills
-                            dbc.Row([
-                                
-                                ## Col for Home Page Pills ##
-                                ## TODO: Create separate component for home page pills to work ##
-                                dbc.Col([
-
-                                    html.Span(html.Small('1: LHR & JFK'), className='mx-1 px-2 py-1', id='home-pill-1',
-                                              style={'backgroundColor': '#62B3E0', 'color': '#0B2838', 'borderRadius': '20px'}),
-
-                                    ## Popover for Home Page Pill ##
-                                    dbc.Popover(
-                                        [
-                                            dbc.PopoverHeader('LONDON, UK (LHR) AND NEW YORK, NY (JFK)', style={'fontSize': '80%', 'fontWeight': 'bold'}),
-                                            dbc.PopoverBody(children=[
-                                            html.Span([
-                                                html.Strong('Passengers Flown: '),
-                                                html.P('2,987,159')
-                                                ])
-                                            ], className='px-3 py-2')
-                                        ],
-                                        body=True,
-                                        target='home-pill-1',
-                                        trigger='legacy',
-                                        flip=True
-                                    )
-
-                                ], xl = 3, lg = 4, md = 6, sm = 6, xs = 6, style={'textAlign': 'center'})
-
-
-                            ], justify='center', className='mt-2 mb-4'),
+                            dbc.Container(pills_array, className='mt-2 mb-4 d-flex flex-row justify-content-center flex-wrap align-items-center'),
 
                             dbc.Row([]),
 
-                            dbc.Row([]),
-
-                            home_page_grid
+                            dbc.Row([])
 
                             # html.Span([
 

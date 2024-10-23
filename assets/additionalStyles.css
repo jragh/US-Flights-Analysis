@@ -492,3 +492,7 @@
     padding: 0px;
 
 }
+
+.popover {
+    --bs-popover-max-width: 350px !important;
+}
