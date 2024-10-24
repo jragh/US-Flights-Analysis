@@ -9,7 +9,7 @@ pills_array = [
  
 
     ## Pill Number 1
-    html.Span(html.Small('1: LHR & JFK'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-1',
+    html.Span(html.Small('1: LHR & JFK'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-1',
               style={'backgroundColor': '#62B3E0', 'color': '#0B2838'}),
               
     dbc.Popover(
@@ -41,7 +41,7 @@ pills_array = [
 
 
     ## Pill Number 2
-    html.Span(html.Small('2: ATL & MCO'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-2',
+    html.Span(html.Small('2: ATL & MCO'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-2',
               style={'backgroundColor': '#E89C31', 'color': '#0B2838'}),
 
     dbc.Popover([
@@ -72,7 +72,7 @@ pills_array = [
 
 
     ## Pill Number 3
-    html.Span(html.Small('3: LAX & JFK'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-3',
+    html.Span(html.Small('3: LAX & JFK'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-3',
               style={'backgroundColor': '#A1123D', 'color': '#E89C31'}),
 
     dbc.Popover([
@@ -102,7 +102,7 @@ pills_array = [
 
 
     ## Pill Number 4
-    html.Span(html.Small('4: LAS & LAX'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-4',
+    html.Span(html.Small('4: LAS & LAX'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-4',
               style={'backgroundColor': '#62B3E0', 'color': '#0B2838'}),
 
     dbc.Popover([
@@ -132,7 +132,7 @@ pills_array = [
 
 
     ## Pill Number 5
-    html.Span(html.Small('5: LAX & SFO'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-5',
+    html.Span(html.Small('5: LAX & SFO'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-5',
               style={'backgroundColor': '#E89C31', 'color': '#0B2838'}),
 
     dbc.Popover([
@@ -162,7 +162,7 @@ pills_array = [
 
     
     ## Pill Number 6
-    html.Span(html.Small('6: ATL & FLL'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-6',
+    html.Span(html.Small('6: ATL & FLL'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-6',
               style={'backgroundColor': '#A1123D', 'color': '#E89C31'}),
 
     dbc.Popover([
@@ -192,7 +192,7 @@ pills_array = [
 
 
     ## Pill Number 7
-    html.Span(html.Small('7: LAS & DEN'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-7',
+    html.Span(html.Small('7: LAS & DEN'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-7',
               style={'backgroundColor': '#62B3E0', 'color': '#0B2838'}),
 
     dbc.Popover([
@@ -222,7 +222,7 @@ pills_array = [
 
 
     ## Pill Number 8
-    html.Span(html.Small('8: PHX & DEN'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-8',
+    html.Span(html.Small('8: PHX & DEN'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-8',
               style={'backgroundColor': '#E89C31', 'color': '#0B2838'}),
 
     dbc.Popover([
@@ -252,7 +252,7 @@ pills_array = [
 
 
     ## Pill Number 9
-    html.Span(html.Small('9: LAX & HNL'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-9',
+    html.Span(html.Small('9: LAX & HNL'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-9',
               style={'backgroundColor': '#A1123D', 'color': '#E89C31'}),
 
     dbc.Popover([
@@ -282,7 +282,7 @@ pills_array = [
 
     
     ## Pill Number 10
-    html.Span(html.Small('10: LAX & ORD'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill', id='home-pill-10',
+    html.Span(html.Small('10: LAX & ORD'), className='mx-1 my-1 px-2 py-1 flex-grow-0 rounded-pill btn-home-page', id='home-pill-10',
               style={'backgroundColor': '#62B3E0', 'color': '#0B2838'}),
 
     dbc.Popover([

@@ -39,7 +39,8 @@ layout = html.Div([
                                    See below for an example on the type of information you can explore: ''', className='mb-3', id='airports-graph-desc',
                                    style={'color': 'rgb(199, 199, 200)'}),
 
-                            html.H6('Top 5 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='mt-4 mb-3 text-center'),
+                            html.H6('Top 10 Busiest Trips By Passengers in US (By Passenger Count)', style={'color': '#E89C31'}, className='mt-4 mb-0 text-center'),
+                            html.P('Click the buttons below to see additional route information!', className='mb-3 mt-1 text-center', style={'fontSize': '80%', 'color': 'rgb(199, 199, 200)'}),
 
                             ## First Row will have 3 pills
                             ## pills_array brought in from external module
