@@ -494,7 +494,7 @@
 }
 
 .popover {
-    --bs-popover-max-width: 350px !important;
+    --bs-popover-max-width: 240px !important;
 }
 
 
