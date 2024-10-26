@@ -36,7 +36,8 @@ pills_array = [
         body=True,
         target='home-pill-1',
         trigger='legacy',
-        flip=True
+        flip=True,
+        placement='auto'
     ),
 
 
@@ -67,7 +68,8 @@ pills_array = [
         body=True,
         target='home-pill-2',
         trigger='legacy',
-        flip=True
+        flip=True,
+        placement='auto'
     ),
 
 
@@ -98,7 +100,8 @@ pills_array = [
         body=True,
         target='home-pill-3',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
 
     ## Pill Number 4
@@ -128,7 +131,8 @@ pills_array = [
         body=True,
         target='home-pill-4',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
 
     ## Pill Number 5
@@ -158,7 +162,8 @@ pills_array = [
         body=True,
         target='home-pill-5',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
     
     ## Pill Number 6
@@ -188,7 +193,8 @@ pills_array = [
         body=True,
         target='home-pill-6',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
 
     ## Pill Number 7
@@ -218,7 +224,8 @@ pills_array = [
         body=True,
         target='home-pill-7',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
 
     ## Pill Number 8
@@ -248,7 +255,8 @@ pills_array = [
         body=True,
         target='home-pill-8',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
 
     ## Pill Number 9
@@ -278,7 +286,8 @@ pills_array = [
         body=True,
         target='home-pill-9',
         trigger='legacy',
-        flip=True),
+        flip=True,
+        placement='auto'),
 
     
     ## Pill Number 10
@@ -308,7 +317,8 @@ pills_array = [
         body=True,
         target='home-pill-10',
         trigger='legacy',
-        flip=True)
+        flip=True,
+        placement='auto')
                               
 
 ]
