@@ -69,7 +69,8 @@ def pathnameCallback(path):
                           '/PassengerAnalytics': 'Passenger Analytics', 
                           '/AirportAnalytics' : 'Airport Analytics', 
                           '/RouteAnalytics': 'Route Analytics',
-                          "/": 'Home'
+                          "/": 'Home',
+                          "/OnTimePerformance": "On Time Performance"
                           }
 
     return_children = [
