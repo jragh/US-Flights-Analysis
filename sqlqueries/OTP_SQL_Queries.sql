@@ -21,6 +21,75 @@ group by "OP_UNIQUE_CARRIER"
 order by "OP_UNIQUE_CARRIER" asc; 
 
 
+---- Line Graph with Confidence Intervals Per Carrier ----
+---- Includes Daily Averages, Counts, and Split By Delay Type ----
+
+with dfi_stats as (
+
+select "OP_UNIQUE_CARRIER" as "Unique Carrier Code",
+row_number() over (partition by "OP_UNIQUE_CARRIER" order by cast("FL_DATE" as DATE) asc) as "Date Ordering",
+cast("FL_DATE" as date) as "Flight Date",
+AVG(cast("ARR_DELAY" as real)) as "Average Arrival Delay",
+stddev(cast("ARR_DELAY" as real)) as "Arrival Delay Stardard Deviation",
+SUM(cast("FLIGHTS" as real)) as "Number of Flights",
+-- Confidence Interval Daily --
+AVG(cast("ARR_DELAY" as real)) + 1.96 * stddev(cast("ARR_DELAY" as real)) / sqrt(SUM(cast("FLIGHTS" as real))) as "CI Daily Upper",
+AVG(cast("ARR_DELAY" as real)) - 1.96 * stddev(cast("ARR_DELAY" as real)) / sqrt(SUM(cast("FLIGHTS" as real))) as "CI Daily Lower" 
+
+-- movMean + Z * movStd / np.sqrt(N)
+
+
+from public.t_ontime_reporting_2023 
+where "CANCELLED" = 0
+-- and date_part('month', cast("FL_DATE" as date)) = 1
+
+group by "OP_UNIQUE_CARRIER", cast("FL_DATE" as date)),
+
+dfi_rolling_stats as (
+
+select a.*,
+AVG(a."Average Arrival Delay") over (partition by a."Unique Carrier Code" order by a."Flight Date" rows between 6 PRECEDING and current ROW) as "Grouped Rolling Average",
+stddev_samp(a."Average Arrival Delay") over (partition by a."Unique Carrier Code" order by a."Flight Date" rows between 6 PRECEDING and current ROW) as "Grouped Standard Deviation"
+
+
+from dfi_stats as a),
+
+
+carrier_lookup as (
+
+select distinct unique_carrier, unique_carrier_name
+from public.t100_segment_all_carrier_2023)
+
+select a.*,
+
+b.unique_carrier_name as "Unique Carrier Name",
+a."Grouped Rolling Average" + 1.96 * a."Grouped Standard Deviation" / sqrt(7) as "CI Grouped Upper",
+a."Grouped Rolling Average" - 1.96 * a."Grouped Standard Deviation" / sqrt(7) as "CI Grouped Lower"
+
+into public.otp_daily_average
+
+from dfi_rolling_stats a
+left join carrier_lookup b
+on a."Unique Carrier Code" = b.unique_carrier
+
+order by a."Unique Carrier Code", a."Flight Date" asc;
+
+select distinct "Unique Carrier Name" from public.otp_daily_average oda order by "Unique Carrier Name"
+
+order by "OP_UNIQUE_CARRIER", cast("FL_DATE" as date)
+
+select count(distinct "FL_DATE") from public.t_ontime_reporting_2023
+
+select * from public.t100_segment_all_carrier_2023 limit 1000
+
+
+
+group by unique_carrier
+--having count(*) > 1
+order by count(*) desc;
+
+
+
 ---- Scatter Plot Joining On time performance vs passenger counts ----
 -- T100 Data pull for Passenger & Flight Counts --
 select 
