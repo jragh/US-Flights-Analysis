@@ -248,3 +248,247 @@ order by SUM(case when cast("ARR_DELAY" as decimal(20, 2)) > 0 then cast("ARR_DE
 
 
 ---- Average Delay Time, Median Delay Time, Number of Delayed Flights, Number of Scheduled Flights, % On Time ----
+
+
+-- By Carrier View --
+with all_otp as (
+select *, 
+
+case 
+	when cast("ARR_DELAY" as decimal(20, 2)) < -10.0 then 'Early > 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= -10.0 and cast("ARR_DELAY" as decimal(20, 2)) < 0.00 then 'Early < 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= 0.00 and cast("ARR_DELAY" as decimal(20, 2)) < 10.00 then 'Late < 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= 10.00 then 'Late > 10 Mins'
+end as "ARR_DELAY_CLASS"
+
+
+from public.t_ontime_reporting_2023
+where "CANCELLED" = 0
+and "ORIGIN" <> "DEST"
+and "ARR_DELAY" is not null),
+
+carriers as (
+
+select distinct unique_carrier, unique_carrier_name
+from public.t100_segment_all_carrier_2023
+
+)
+
+select a."OP_UNIQUE_CARRIER" as "Unique Carrier Code",
+c.unique_carrier_name as "Unique Carrier Name",
+cast(a."MONTH" as real) as "Month Number",
+b.month_name_short as "Month Name",
+a."ARR_DELAY_CLASS" as "Arrival Delay Classification",
+
+SUM(cast(a."FLIGHTS" as decimal(20, 2))) as "Total Flights"
+
+--into public.otp_carrier_monthly_delay_class
+
+from all_otp a
+left join carriers c
+on a."OP_UNIQUE_CARRIER" = c.unique_carrier
+
+left join public.months_lookup b
+on cast(a."MONTH" as real) = b.month
+
+where a."CANCELLED" = 0
+and a."ORIGIN" <> a."DEST"
+and a."ARR_DELAY" is not null
+
+group by a."OP_UNIQUE_CARRIER", c.unique_carrier_name, cast(a."MONTH" as real), b.month_name_short, a."ARR_DELAY_CLASS"
+
+order by c.unique_carrier_name asc, cast(a."MONTH" as real) asc, a."ARR_DELAY_CLASS" asc;
+
+-- Average Delay By Carrier with Confidence Intervals --
+with carriers as (
+
+select distinct unique_carrier, unique_carrier_name
+from public.t100_segment_all_carrier_2023
+
+)
+
+select
+
+a."OP_UNIQUE_CARRIER" as "Unique Carrier Code",
+c.unique_carrier_name as "Unique Carrier Name",
+
+cast(a."MONTH" as real) as "Month Number",
+b.month_name_short as "Month Name",
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) as "Average Delay",
+SUM(cast(a."FLIGHTS" as decimal(20, 2))) as "Total Flights",
+STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) as "Delay Standard Deviation",
+
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) + (1.96 * (STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) / sqrt(SUM(cast(a."FLIGHTS" as decimal(20, 2)))))) as "CI Upper",
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) - (1.96 * (STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) / sqrt(SUM(cast(a."FLIGHTS" as decimal(20, 2)))))) as "CI Lower"
+
+into public.otp_carrier_monthly_average_ci
+
+from public.t_ontime_reporting_2023 a
+left join public.months_lookup b
+on cast(a."MONTH" as real) = b.month
+
+left join carriers c
+on a."OP_UNIQUE_CARRIER"  = c.unique_carrier
+
+where a."CANCELLED" = 0
+and a."ORIGIN" <> a."DEST"
+and a."ARR_DELAY" is not null
+
+group by a."OP_UNIQUE_CARRIER" , c.unique_carrier_name, cast(a."MONTH" as real), b.month_name_short
+
+order by c.unique_carrier_name asc, cast(a."MONTH" as real) asc;
+
+select * from public.otp_carrier_monthly_average_ci
+
+-- All Carriers View --
+-- Delay By Categorization --
+with all_otp as (
+select *, 
+
+case 
+	when cast("ARR_DELAY" as decimal(20, 2)) < -10.0 then 'Early > 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= -10.0 and cast("ARR_DELAY" as decimal(20, 2)) < 0.00 then 'Early < 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= 0.00 and cast("ARR_DELAY" as decimal(20, 2)) < 10.00 then 'Late < 10 Mins'
+	when cast("ARR_DELAY" as decimal(20, 2)) >= 10.00 then 'Late > 10 Mins'
+end as "ARR_DELAY_CLASS"
+
+
+from public.t_ontime_reporting_2023
+where "CANCELLED" = 0
+and "ORIGIN" <> "DEST"
+and "ARR_DELAY" is not null)
+
+
+select
+cast(a."MONTH" as real) as "Month Number",
+b.month_name_short as "Month Name",
+a."ARR_DELAY_CLASS" as "Arrival Delay Classification",
+
+SUM(cast(a."FLIGHTS" as decimal(20, 2))) as "Total Flights"
+
+into public.otp_total_monthly_delay_class
+
+from all_otp a
+
+left join public.months_lookup b
+on cast(a."MONTH" as real) = b.month
+
+where a."CANCELLED" = 0
+and a."ORIGIN" <> a."DEST"
+and a."ARR_DELAY" is not null
+
+group by cast(a."MONTH" as real), b.month_name_short, a."ARR_DELAY_CLASS"
+
+order by cast(a."MONTH" as real) asc, a."ARR_DELAY_CLASS" asc;
+
+select * from public.otp_total_monthly_delay_class
+
+
+select
+cast(a."MONTH" as real) as "Month Number",
+b.month_name_short as "Month Name",
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) as "Average Delay",
+SUM(cast(a."FLIGHTS" as decimal(20, 2))) as "Total Flights", 
+
+STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) as "Delay Standard Deviation",
+
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) + (1.96 * (STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) / sqrt(SUM(cast(a."FLIGHTS" as decimal(20, 2)))))) as "CI Upper",
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) - (1.96 * (STDDEV(cast(a."ARR_DELAY" as decimal(20, 2))) / sqrt(SUM(cast(a."FLIGHTS" as decimal(20, 2)))))) as "CI Lower"
+
+into public.otp_total_monthly_average_ci
+
+from public.t_ontime_reporting_2023 a
+left join public.months_lookup b
+on cast(a."MONTH" as real) = b.month
+
+where a."CANCELLED" = 0
+and a."ORIGIN" <> a."DEST"
+and a."ARR_DELAY" is not null
+
+group by cast(a."MONTH" as real), b.month_name_short
+
+order by cast(a."MONTH" as real) asc;
+
+select * from public.otp_total_monthly_average_ci
+
+
+
+select * from public.otp_carrier_by_month_summary_delay
+
+-- drop table if exists public.otp_carrier_by_month_summary_delay
+
+with carriers as (
+
+select distinct unique_carrier, unique_carrier_name
+from public.t100_segment_all_carrier_2023)
+
+select a."OP_UNIQUE_CARRIER" as "Unique Carrier Code",
+c.unique_carrier_name as "Unique Carrier Name",
+cast(a."MONTH" as real) as "Month Number",
+b.month_name_short as "Month Name",
+AVG(cast(a."ARR_DELAY" as decimal(20, 2))) as "Average Delay",
+SUM(cast(a."FLIGHTS" as decimal(20, 2))) as "Total Flights",
+SUM(case when cast(a."ARR_DELAY" as decimal(20, 2)) >= 10.0 then 1 else 0 end) as "Total Late > 10 Mins",
+SUM(case when cast(a."ARR_DELAY" as decimal(20, 2)) >= 0.0 and cast(a."ARR_DELAY" as decimal(20, 2)) < 10.0 then 1 else 0 end) as "Total Late < 10 Mins",
+SUM(case when cast(a."ARR_DELAY" as decimal(20, 2)) >= -10.0 and cast(a."ARR_DELAY" as decimal(20, 2)) < 0.0 then 1 else 0 end) as "Total Early < 10 Mins",
+SUM(case when cast(a."ARR_DELAY" as decimal(20, 2)) < -10.0 then 1 else 0 end) as "Total Early > 10 Mins"
+
+-- Section to include breakdown of late and on time flights --
+
+-- into public.otp_carrier_by_month_summary_delay
+
+
+from public.t_ontime_reporting_2023 a
+
+left join public.months_lookup b
+on cast(a."MONTH" as real) = b.month
+
+left join carriers c
+on a."OP_UNIQUE_CARRIER" = c.unique_carrier
+
+where a."CANCELLED" = 0
+and a."ORIGIN" <> a."DEST"
+and a."ARR_DELAY" is not null
+
+group by a."OP_UNIQUE_CARRIER", c.unique_carrier_name, cast(a."MONTH" as real), b.month_name_short
+
+order by c.unique_carrier_name asc, cast(a."MONTH" as real) asc;
+
+
+
+
+
+select * from public.otp_carrier_monthly_delay_class
+order by "Unique Carrier Name" asc, cast("Month Number" as real) asc;
+
+-- Selected Carrier Query --
+with a as (
+
+select "Unique Carrier Code", "Unique Carrier Name", "Month Number", "Month Name", 
+SUM(case when "Arrival Delay Classification" like 'Late %' then cast("Total Flights" as real) else 0 end) as "Total Late Flights",
+SUM(cast("Total Flights" as real)) as "Total Flights"
+from public.otp_carrier_monthly_delay_class
+group by "Unique Carrier Code", "Unique Carrier Name", "Month Number", "Month Name")
+
+select a.*, (a."Total Late Flights" * 1.00) / (a."Total Flights" * 1.00) as "Late Flight Percentage"
+from a
+order by "Unique Carrier Name", cast("Month Number" as real) asc;
+
+-- All Carriers Query --
+with a as (
+
+select "Month Number", "Month Name", 
+SUM(case when "Arrival Delay Classification" like 'Late %' then cast("Total Flights" as real) else 0 end) as "Total Late Flights",
+SUM(cast("Total Flights" as real)) as "Total Flights"
+from public.otp_carrier_monthly_delay_class
+group by "Month Number", "Month Name")
+
+select 'All Carriers' as "Unique Carrier Name", a.*, (a."Total Late Flights" * 1.00) / (a."Total Flights" * 1.00) as "Late Flight Percentage"
+from a
+order by cast("Month Number" as real) asc;
+
+select * from a
+order by "Unique Carrier Name", cast("Month Number" as real) asc
+
+
+select * from public.otp_carrier_monthly_average_ci
