@@ -56,13 +56,13 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
         otp_all_carrier_average_summary_query = """
         
         SELECT 
-        "Month Number", 
+        cast("Month Number" as integer) as "Month Number", 
         "Month Name", 
-        CAST("Average Delay" as decimal(20, 2)) as "Average Delay", 
-        CAST("Total Flights" as real) as "Total Flights", 
-        CAST("Delay Standard Deviation" as decimal(20, 2)) as "Delay Standard Deviation", 
-        CAST("CI Upper" as decimal(20, 2)) as "CI Upper", 
-        CAST("CI Lower" as decimal(20, 2)) as "CI Lower"
+        CAST("Average Delay" as real) as "Average Delay", 
+        CAST("Total Flights" as integer) as "Total Flights", 
+        CAST("Delay Standard Deviation" as real) as "Delay Standard Deviation", 
+        CAST("CI Upper" as real) as "CI Upper", 
+        CAST("CI Lower" as real) as "CI Lower"
         FROM public.otp_total_monthly_average_ci
         
         """
@@ -70,6 +70,14 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
         otp_all_carriers_summary_2 = pl.read_database_uri(engine='adbc', uri=sqlite_path, query=otp_all_carrier_average_summary_query)
 
         otp_all_carriers_summary_2 = otp_all_carriers_summary_2.with_columns(pl.col("Average Delay").cast(pl.Float64, strict=True).alias('Average Delay Float'))
+
+        otp_all_carriers_summary_2 = otp_all_carriers_summary_2.with_columns(
+
+            pl.col('Average Delay Float').round(2).alias('Average Delay Float'),
+            pl.col('CI Upper').cast(pl.Float64, strict=True).round(2).alias('CI Upper'),
+            pl.col('CI Lower').cast(pl.Float64, strict=True).round(2).alias('CI Lower'),
+
+        )
 
         otp_all_carriers_summary_fig = px.line(otp_all_carriers_summary_2, 
                                             x="Month Name", 
@@ -107,7 +115,7 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
                                             <b>Average Arrival Delay: </b> %{y:.3} Mins<br>
                                             <b>Total Flights: </b> %{customdata[2]:,}<br>
                                             <b>CI 95% Upper: </b> %{customdata[0]} Mins<br>
-                                            <b>CI 95% Lower: </b> %{customdata[1] Mins<br>""")
+                                            <b>CI 95% Lower: </b> %{customdata[1]} Mins<br>""")
 
 
 
@@ -193,11 +201,11 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
             "Unique Carrier Name", 
             "Month Number",
             "Month Name", 
-            CAST("Average Delay" as decimal(20,2)) as "Average Delay", 
+            CAST("Average Delay" as real) as "Average Delay", 
             CAST("Total Flights" as real) as "Total Flights", 
-            CAST("Delay Standard Deviation" as decimal(20,2)) as "Delay Standard Deviation", 
-            CAST("CI Upper" as decimal(20, 2)) as "CI Upper", 
-            CAST("CI Lower" as decimal(20, 2)) as "CI Lower"
+            CAST("Delay Standard Deviation" as double precision) as "Delay Standard Deviation", 
+            CAST("CI Upper" as real) as "CI Upper", 
+            CAST("CI Lower" as real) as "CI Lower"
             FROM public.otp_carrier_monthly_average_ci
 
             where "Unique Carrier Name" = '{selected_carrier}'
@@ -209,6 +217,14 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
         carrier_delay_avg = pl.read_database_uri(query = selected_carrier_query_2, engine='adbc', uri=sqlite_path)
 
         carrier_delay_avg = carrier_delay_avg.with_columns(pl.col("Average Delay").cast(pl.Float64, strict=True).alias('Average Delay Float'))
+
+        carrier_delay_avg = carrier_delay_avg.with_columns(
+
+            pl.col('Average Delay Float').round(2).alias('Average Delay Float'),
+            pl.col('CI Upper').cast(pl.Float64, strict=True).round(2).alias('CI Upper'),
+            pl.col('CI Lower').cast(pl.Float64, strict=True).round(2).alias('CI Lower')
+
+        )
 
         carrier_delay_avg_fig = px.line(carrier_delay_avg, 
                                         x="Month Name", 
