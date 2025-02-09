@@ -1,11 +1,6 @@
 adbc-driver-manager==1.3.0
 adbc-driver-postgresql==1.3.0
 adbc-driver-sqlite==1.3.0
-azure-core-cpp==1.14.0
-azure-identity-cpp==1.10.0
-azure-storage-blobs-cpp==12.13.0
-azure-storage-common-cpp==12.8.0
-azure-storage-files-datalake-cpp==12.12.0
 blinker==1.9.0
 brotli-python==1.1.0
 bzip2==1.0.8
