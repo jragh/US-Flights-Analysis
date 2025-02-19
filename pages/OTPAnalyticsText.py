@@ -40,13 +40,22 @@ def otp_text():
 
             dbc.Accordion([
 
+                ## Accordion Item 1: Overall Arrival Delay By Carrier ##
                 dbc.AccordionItem([
 
                     html.Small("""View average Arrival Delay times in minutes on a daily basis for each available American Carrier.
                                Toggle switch allows choice between Late Arrivals only or All Arrivals (Early, On Time, Late).
                                Includes 95% Confidence Intervals. """, className="text-muted")
 
-                ], title="Average Arrival Delay By Carrier (Daily)", style={'width': "100%"}, item_id='otp-item-1')
+                ], title="Average Arrival Delay By Carrier (Daily)", style={'width': "100%"}, item_id='otp-item-1'),
+
+                ## Accordion Item 2: OTP Performance By Carrier & Route ##
+                dbc.AccordionItem([
+
+                    html.Small("""View average Arrival Delay times in minutes on a route by route basis for each available American Carrier.
+                               Route statistics are combined to include both directions of the trip.""", className="text-muted")
+
+                ], title="Arrival Delay By Route & Carrier", style={'width': "100%"}, item_id='otp-item-2'),
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='otp-viz-accordion', active_item='otp-item-1')
 

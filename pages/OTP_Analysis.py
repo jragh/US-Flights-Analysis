@@ -14,6 +14,8 @@ from .OTP_Performance_Pct_Late import otpPerformancePctLate, otpPerformanceLateB
 
 from .OTP_Performance_Late_Breakdown import otpPerformanceLateBreakdown
 
+from .OTP_Performance_Scatter_Carrier import otpPerformanceCarrierScatter
+
 
 
 dash.register_page(__name__, 
@@ -24,7 +26,7 @@ dash.register_page(__name__,
 
 sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
-otp_visual_list = ['Average Arrival Delay By Carrier']
+otp_visual_list = ['Average Arrival Delay By Carrier', 'Arrival Delay By Route & Carrier']
 
 carrier_selection_query = """ select distinct "Unique Carrier Name" from public.otp_daily_average oda order by "Unique Carrier Name" """
 
@@ -146,6 +148,33 @@ def otpGraphUpdateCallback(selected_viz, selected_carrier):
         elif ctx.triggered_id is None:
 
             return otpPerformanceLateBreakdown(selected_carrier='All Carriers', sqlite_path=sqlite_path, selected_viz=selected_viz)
+        
+    ## Selection and return for Graph #2
+    elif selected_viz == 'Arrival Delay By Route & Carrier':
+
+        if ctx.triggered_id == 'otp-carrier-selection':
+
+            if selected_carrier is None or selected_carrier.strip() == '':
+
+                return no_update
+            
+            else: 
+
+                return otpPerformanceCarrierScatter(selected_carrier=selected_carrier, sqlite_path=sqlite_path, selected_viz=selected_viz)
+            
+        elif ctx.triggered_id == 'otp-viz-selection':
+
+            if selected_carrier is None or selected_carrier.strip() == '' or selected_carrier == 'All Carriers':
+
+                return otpPerformanceCarrierScatter(selected_carrier = 'All Carriers', sqlite_path=sqlite_path, selected_viz=selected_viz)
+            
+            else:
+
+                return otpPerformanceCarrierScatter(selected_carrier=selected_carrier, sqlite_path=sqlite_path, selected_viz=selected_viz)
+            
+        elif ctx.triggered_id is None:
+
+            return otpPerformanceCarrierScatter(selected_carrier = 'All Carriers', sqlite_path=sqlite_path, selected_viz=selected_viz)
 
 ## Callback for the Routes Description Accordion ##
 @callback(
@@ -159,6 +188,10 @@ def accordionActiveItemCallback(selected_viz):
     if selected_viz == otp_visual_list[0]:
 
         return 'otp-item-1'
+    
+    elif selected_viz == otp_visual_list[1]:
+
+        return 'otp-item-2'
     
 
 @callback(
