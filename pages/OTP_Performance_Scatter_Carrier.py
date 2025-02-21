@@ -26,19 +26,39 @@ def otpPerformanceCarrierScatter(selected_carrier, sqlite_path, selected_viz):
 
         otp_carriers_summary_df = pl.read_database_uri(query=otp_carriers_summary, uri=sqlite_path, engine='adbc')
 
+        otp_carriers_summary_df = otp_carriers_summary_df.with_columns(
+            pl.when((pl.col('Average Arrival Delay Performance') >= 10.00)).then(pl.lit('Late > 10 Mins'))
+            .when((pl.col('Average Arrival Delay Performance') < 10.00) & (pl.col('Average Arrival Delay Performance') >= 0.00)).then(pl.lit('Late < 10 Mins'))
+            .when((pl.col('Average Arrival Delay Performance') < 0.00) & (pl.col('Average Arrival Delay Performance') >= -10.00)).then(pl.lit('Early < 10 Mins'))
+            .when((pl.col('Average Arrival Delay Performance') < -10.00)).then(pl.lit('Early > 10 Mins')).alias('OTP Arrival Category'))
+
         otp_carriers_delay_scatter = px.scatter(data_frame=otp_carriers_summary_df, x = 'Number of Flights OTP', y = 'Average Arrival Delay Performance',
-                                                log_x = False, log_y= False, 
+                                                log_x = False, log_y= False, color="OTP Arrival Category",
                                                 custom_data=['Carrier Name', 'Route Description Short', 'Total Delays', 'Total Arrival Performance'],
-                                                opacity=0.75)
+                                                opacity=0.75,
+                                                color_discrete_map={
+                                                    'Late > 10 Mins': "#f03a3a",
+                                                    'Late < 10 Mins': "#f4a582",
+                                                    'Early < 10 Mins': "#92c5de",
+                                                    'Early > 10 Mins': "#0571b0"
+                                                },
+                                                category_orders={'OTP Arrival Category': ['Early > 10 Mins', 'Early < 10 Mins', 'Late < 10 Mins', 'Late > 10 Mins']})
         
-        otp_carriers_delay_scatter.update_traces(marker={"line": {'width': 0.75}, 'size': 7.5, 'color': '#E89C31',
+        otp_carriers_delay_scatter.update_traces(marker={"line": {'width': 0.75}, 'size': 7.5,
                                              'opacity': 0.75}, mode='markers', 
                                              hovertemplate = '''<b>%{customdata[1]}</b><br><br><b>Average Arrival Delay:</b> %{y:.2f} Mins<br><b>Total Flights:</b> %{x:.3s}<br><b>Total Delayed Flights:</b> %{customdata[2]:.3s}<br><b>Total Minutes Delayed:</b> %{customdata[3]:.3s}<br>''',
                                     )
         
         otp_carriers_delay_scatter.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},
                                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
-                               showlegend=False, hoverlabel={'align': 'left'})
+                               showlegend=True, hoverlabel={'align': 'left'},
+                               legend={
+                                   'orientation':'h',
+                                   'yanchor':"bottom",
+                                   'y':1.02,
+                                   'xanchor': 'center',
+                                   'x': 0.5}, 
+                                legend_title_text = '<b>Arrival Delay Category</b>')
         
         otp_carriers_delay_scatter.update_yaxes(title='Average Arrival Time Delay', showline=False, showgrid=True, showticklabels=True, tickwidth=2,
                               gridcolor='rgba(60, 60, 60, 0.15)', griddash='dot', zeroline=True, zerolinewidth=1, zerolinecolor='rgba(33, 37, 41, 0.5)')
