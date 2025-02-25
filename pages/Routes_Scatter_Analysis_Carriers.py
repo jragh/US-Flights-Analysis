@@ -76,12 +76,7 @@ def generateScatterCarrierRouteLoadFactor(selected_viz: str, selected_carrier: s
                                         'color': '#E89C31',
                                         'opacity': 0.75}, 
                                     
-                                    hovertemplate = '''
-                                    <b>%{customdata[2]}</b><br><br>
-                                    <b>Load Factor:</b> %{y:.2%}<br>
-                                    <b>Total Passengers:</b> %{customdata[0]:.3s}<br>
-                                    <b>Total Seats:</b> %{customdata[1]:.3s}<br>
-                                    <b>Total Flights:</b> %{x:.3s}<br>''',
+                                    hovertemplate = '''<b>%{customdata[2]}</b><br><br><b>Load Factor:</b> %{y:.2%}<br><b>Total Passengers:</b> %{customdata[0]:.3s}<br><b>Total Seats:</b> %{customdata[1]:.3s}<br><b>Total Flights:</b> %{x:.3s}<br>''',
                                     row=1, col=1
                                     )
         
@@ -158,12 +153,7 @@ def generateScatterCarrierRouteLoadFactor(selected_viz: str, selected_carrier: s
                                     opacity=0.7)
         
         scatter_figure.update_traces(marker={"line": {'width': 0.75}, 'size': 8.5, 'color': '#E89C31',
-                                             'opacity': 0.75}, hovertemplate = '''
-                                    <b>%{customdata[2]}</b><br><br>
-                                    <b>Load Factor:</b> %{y:.2%}<br>
-                                    <b>Total Passengers:</b> %{customdata[0]:.3s}<br>
-                                    <b>Total Seats:</b> %{customdata[1]:.3s}<br>
-                                    <b>Total Flights:</b> %{x:.3s}<br>''',
+                                             'opacity': 0.75}, hovertemplate = '''<b>%{customdata[2]}</b><br><br><b>Load Factor:</b> %{y:.2%}<br><b>Total Passengers:</b> %{customdata[0]:.3s}<br><b>Total Seats:</b> %{customdata[1]:.3s}<br><b>Total Flights:</b> %{x:.3s}<br>''',
                                     )
         
         scatter_figure.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},
@@ -233,12 +223,7 @@ def updateScatterCarrierRouteLoadFactor(selected_carrier: str, sqlite_path: str,
                                     custom_data=["Total Passengers", "Total Seats", "Carrier Name"], log_x=True)
         
         scatter_figure.update_traces(marker={"line": {'width': 0.75}, 'size': 8.5, 'color': '#E89C31',
-                                             'opacity': 0.75}, hovertemplate = '''
-                                    <b>%{customdata[2]}</b><br><br>
-                                    <b>Load Factor:</b> %{y:.2%}<br>
-                                    <b>Total Passengers:</b> %{customdata[0]:.3s}<br>
-                                    <b>Total Seats:</b> %{customdata[1]:.3s}<br>
-                                    <b>Total Flights:</b> %{x:.3s}<br>''',
+                                             'opacity': 0.75}, hovertemplate = '''<b>%{customdata[2]}</b><br><br><b>Load Factor:</b> %{y:.2%}<br><b>Total Passengers:</b> %{customdata[0]:.3s}<br><b>Total Seats:</b> %{customdata[1]:.3s}<br><b>Total Flights:</b> %{x:.3s}<br>''',
                                     row=1, col=1
                                     )
         
@@ -297,12 +282,7 @@ def updateScatterCarrierRouteLoadFactor(selected_carrier: str, sqlite_path: str,
                                     log_x= False, custom_data=["Total Passengers", "Total Seats", "Route Airport Pair"],
                                     opacity=0.7)
         
-        scatter_figure.update_traces(marker={"line": {'width': 0.75}, 'size': 8.5, 'color': '#E89C31','opacity': 0.75}, hovertemplate = '''
-                                    <b>%{customdata[2]}</b><br><br>
-                                    <b>Load Factor:</b> %{y:.2%}<br>
-                                    <b>Total Passengers:</b> %{customdata[0]:.3s}<br>
-                                    <b>Total Seats:</b> %{customdata[1]:.3s}<br>
-                                    <b>Total Flights:</b> %{x:.3s}<br>''',
+        scatter_figure.update_traces(marker={"line": {'width': 0.75}, 'size': 8.5, 'color': '#E89C31','opacity': 0.75}, hovertemplate = '''<b>%{customdata[2]}</b><br><br><b>Load Factor:</b> %{y:.2%}<br><b>Total Passengers:</b> %{customdata[0]:.3s}<br><b>Total Seats:</b> %{customdata[1]:.3s}<br><b>Total Flights:</b> %{x:.3s}<br>''',
                                     )
         
         scatter_figure.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},

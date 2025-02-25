@@ -73,11 +73,7 @@ def generateRouteCarrierRevenue(selected_viz, selected_airport_1, selected_airpo
                           custom_data=['Total Passengers', 'Total Flights', 'Average Fare'])
     
     h_bar_figure.update_traces(textfont_size=10, marker={"cornerradius":4}, textposition='inside', textangle=0,
-                               hovertemplate='''<b>%{y}</b><br><br>Aircraft Type: %{data.name}
-                                                <br>Total Revenue: %{x:$.3s}<extra></extra>
-                                                <br>Total Passengers: %{customdata[0]:,.3s}
-                                                <br>Total Flights: %{customdata[1]:,.0f}
-                                                <br>Average Fare Cost: %{customdata[2]:$.3s}''', cliponaxis=False,
+                               hovertemplate='''<b>%{y}</b><br><br>Aircraft Type: %{data.name}<br>Total Revenue: %{x:$.3s}<extra></extra><br>Total Passengers: %{customdata[0]:,.3s}<br>Total Flights: %{customdata[1]:,.0f}<br>Average Fare Cost: %{customdata[2]:$.3s}''', cliponaxis=False,
                                texttemplate='%{x:$.3s}')
     
     h_bar_figure.update_layout(yaxis={'tickfont': {'size': 10}}, margin={'l':10, 'r': 10, 't': 10, 'b': 8},
