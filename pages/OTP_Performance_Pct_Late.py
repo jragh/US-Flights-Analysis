@@ -59,10 +59,7 @@ def otpPerformancePctLate(selected_carrier, sqlite_path):
 
     polars_barchart.update_yaxes(showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)", type="-", tickformat='0.0%')
 
-    polars_barchart.update_traces(textfont_size=10, marker={"cornerradius":4, "color": 'rgb(232, 156, 49)'}, hovertemplate='''<b>%{x}</b><br /><br />
-                                  <b>Percent of Flights Late: </b>%{y:.2%}
-                                  <br><b>Total Late Flights: </b>%{customdata[1]:,}
-                                  <br /><b>Total Flights: </b>%{customdata[0]:,}''')
+    polars_barchart.update_traces(textfont_size=10, marker={"cornerradius":4, "color": 'rgb(232, 156, 49)'}, hovertemplate='''<b>%{x}</b><br /><br /><b>Percent of Flights Late: </b>%{y:.2%}<br><b>Total Late Flights: </b>%{customdata[1]:,}<br /><b>Total Flights: </b>%{customdata[0]:,}''')
     
     polars_barchart.update_layout(legend={
                 'orientation':'h',

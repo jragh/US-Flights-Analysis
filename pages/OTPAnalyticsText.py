@@ -40,17 +40,27 @@ def otp_text():
 
             dbc.Accordion([
 
+                ## Accordion Item 1: Overall Arrival Delay By Carrier ##
                 dbc.AccordionItem([
 
                     html.Small("""View average Arrival Delay times in minutes on a daily basis for each available American Carrier.
                                Toggle switch allows choice between Late Arrivals only or All Arrivals (Early, On Time, Late).
                                Includes 95% Confidence Intervals. """, className="text-muted")
 
-                ], title="Average Arrival Delay By Carrier (Daily)", style={'width': "100%"}, item_id='otp-item-1')
+                ], title="Average Arrival Delay By Carrier (Daily)", style={'width': "100%"}, item_id='otp-item-1'),
+
+                ## Accordion Item 2: OTP Performance By Carrier & Route ##
+                dbc.AccordionItem([
+
+                    html.Small("""Average Arrival Delay times in minutes on a route by route basis.
+                               Route statistics are combined to include both directions of the trip, and only contains routes with more than 24 flights.
+                               All Carriers highlights total routes and routes that arrive late on average, while selecting a specific carrier will show On-Time Performance for each route the selected carrier operates.""", className="text-muted")
+
+                ], title="Arrival Delay By Route & Carrier", style={'width': "100%"}, item_id='otp-item-2'),
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='otp-viz-accordion', active_item='otp-item-1')
 
-        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll', style={'height': '45vh'}) 
+        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll') 
 
     ]
 

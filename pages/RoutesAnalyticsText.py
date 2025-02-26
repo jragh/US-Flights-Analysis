@@ -60,7 +60,7 @@ def routes_text():
 
             ], class_name='d-flex flex-column w-100 flex-grow-1', id='route-viz-accordion', active_item='routes-item-1')
 
-        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll', style={'height': '45vh'}) 
+        ], className='mt-3 mb-2 w-100 d-flex flex-column justify-content-center overflow-y-scroll') 
 
     ]
 

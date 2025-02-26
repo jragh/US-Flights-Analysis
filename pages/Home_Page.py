@@ -86,7 +86,7 @@ layout = html.Div([
 
             dbc.Col([
 
-                html.Span([html.I(className='bi bi-hourglass-split home-page-info-img')], className='mb-3'),
+                html.A(html.Span([html.I(className='bi bi-hourglass-split home-page-info-img')], className='mb-3'), href='/OnTimePerformance'),
                 html.H5('Flight Delays'),
                 html.Small('Investigate Flight Delay dynamics among a variety of dimensions including Carriers, Airports, Aircraft, and Routes!')
 

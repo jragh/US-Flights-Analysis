@@ -47,8 +47,8 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
     
     select "UNIQUE_CARRIER_NAME",
     "AIRPORT_PAIR",
-    SUM(CAST("TOTAL_PASSENGERS" as real)) as "TOTAL PASSENGERS",
-    SUM(CAST("TOTAL_SEATS" as real)) as "TOTAL SEATS",
+    SUM(CAST("TOTAL_PASSENGERS" as real)) as "Total Passengers",
+    SUM(CAST("TOTAL_SEATS" as real)) as "Total Seats",
 
     (SUM(CAST("TOTAL_PASSENGERS" as double precision)) / SUM(CAST("TOTAL_SEATS" as double precision))) * 100.00 as "PASSENGER UTIL PCT",
 
@@ -73,7 +73,7 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
 
     polars_carrier_routes = polars_carrier_routes.filter(pl.col('PASSENGER RANKING') <= 10)
 
-    polars_barchart = px.bar(polars_carrier_routes, x=["TOTAL SEATS", "TOTAL PASSENGERS"], y="AIRPORT_PAIR", orientation='h',
+    polars_barchart = px.bar(polars_carrier_routes, x=["Total Seats", "Total Passengers"], y="AIRPORT_PAIR", orientation='h',
                             barmode='overlay', text_auto='0.3s', opacity=0.75)
     
     polars_barchart.update_traces(textfont_size=10, marker={"cornerradius":4},
@@ -93,9 +93,9 @@ def passengerUtilizationCarrierRoutes(selected_carrier, sqlite_path):
                               showgrid=True, zeroline=False, showline=False, 
                               showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)")
 
-    polars_barchart.update_traces(marker_color="#E89C31", selector={"name": "TOTAL SEATS"}, textposition='outside', textangle=0)
+    polars_barchart.update_traces(marker_color="#E89C31", selector={"name": "Total Seats"}, textposition='outside', textangle=0)
 
-    polars_barchart.update_traces(marker_color="#023E8A", selector={"name": "TOTAL PASSENGERS"}, textposition="inside", textangle=0)   
+    polars_barchart.update_traces(marker_color="#023E8A", selector={"name": "Total Passengers"}, textposition="inside", textangle=0)   
 
 
 
