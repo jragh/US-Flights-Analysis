@@ -30,7 +30,7 @@ packaging==24.0
 pandas==2.2.1
 patsy==0.5.3
 pip==24.2
-plotly==5.19.0
+plotly==6.0.0
 plotly-express==0.4.1
 polars==0.20.23
 pyarrow==14.0.0
