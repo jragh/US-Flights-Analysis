@@ -171,50 +171,96 @@ cast("MONTH" as real) asc,
 -- X Axis will be Average Arrival Delay --
 -- Dropdown for different delay metrics --
 
+---- This needs to be selected into it's own table ----
+---- By Carrier ----
+
+
+with carrier as (
+
+select unique_carrier, unique_carrier_name, count(*) as "Number of Records" 
+from public.t100_segment_all_carrier_2023
+where unique_carrier in (select distinct "OP_UNIQUE_CARRIER" from public.t_ontime_reporting_2023)
+group by unique_carrier, unique_carrier_name
+
+)
+
 select 
 
-"OP_UNIQUE_CARRIER",
-"ORIGIN",
-"DEST",
+b."unique_carrier_name" as "Carrier Name",
 
-SUM(cast("FLIGHTS" as decimal(20, 2))) as "Number of Flights OTP",
+case 
+	when c.description > d.description then CONCAT(c.description, ' - ', d.description)
+	else CONCAT(d.description, ' - ', c.description)
+end as "Route Description",
 
-SUM(cast("ARR_DELAY" as DECIMAL(20, 2))) as "Total Arrival Performance",
-SUM(case when "ARR_DELAY" is not null and cast("ARR_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "Total Delays",
-AVG(cast(cast("ARR_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average Arrival Delay Performance",
+SUM(cast(a."FLIGHTS" as real)) as "Number of Flights OTP",
 
-SUM(cast("CARRIER_DELAY" as DECIMAL(20, 2))) as "Carrier Delay Time",
-SUM(case when "CARRIER_DELAY" is not null and cast("CARRIER_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "Carrier Delays",
-AVG(cast(cast("CARRIER_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average Carrier Delay Performance",
+SUM(cast(a."ARR_DELAY" as real)) as "Total Arrival Performance",
+SUM(case when a."ARR_DELAY" is not null and cast(a."ARR_DELAY" as real) > 0 then 1 else 0 end) as "Total Delays",
+AVG(cast(cast(a."ARR_DELAY" as real) * 1.00 as FLOAT)) as "Average Arrival Delay Performance",
 
-SUM(cast("WEATHER_DELAY" as DECIMAL(20, 2))) as "Weather Delay Time",
-SUM(case when "WEATHER_DELAY" is not null and cast("WEATHER_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "Weather Delays",
-AVG(cast(cast("WEATHER_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average Weather Delay Performance",
+SUM(cast(a."CARRIER_DELAY" as real)) as "Carrier Delay Time",
+SUM(case when a."CARRIER_DELAY" is not null and cast(a."CARRIER_DELAY" as real) > 0 then 1 else 0 end) as "Carrier Delays",
+AVG(cast(cast(a."CARRIER_DELAY" as real) * 1.00 as FLOAT)) as "Average Carrier Delay Performance",
 
-SUM(cast("NAS_DELAY" as DECIMAL(20, 2))) as "NAS Delay Time",
-SUM(case when "NAS_DELAY" is not null and cast("NAS_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "NAS Delays",
-AVG(cast(cast("NAS_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average NAS Delay Performance",
+SUM(cast(a."WEATHER_DELAY" as real)) as "Weather Delay Time",
+SUM(case when a."WEATHER_DELAY" is not null and cast(a."WEATHER_DELAY" as real) > 0 then 1 else 0 end) as "Weather Delays",
+AVG(cast(cast(a."WEATHER_DELAY" as real) * 1.00 as FLOAT)) as "Average Weather Delay Performance",
 
-SUM(cast("SECURITY_DELAY" as DECIMAL(20, 2))) as "Security Delay Time",
-SUM(case when "SECURITY_DELAY" is not null and cast("SECURITY_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "Security Delays",
-AVG(cast(cast("SECURITY_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average Security Delay Performance",
+SUM(cast(a."NAS_DELAY" as real)) as "NAS Delay Time",
+SUM(case when a."NAS_DELAY" is not null and cast(a."NAS_DELAY" as real) > 0 then 1 else 0 end) as "NAS Delays",
+AVG(cast(cast(a."NAS_DELAY" as real) * 1.00 as FLOAT)) as "Average NAS Delay Performance",
 
-SUM(cast("LATE_AIRCRAFT_DELAY" as DECIMAL(20, 2))) as "Late Aircraft Delay Time",
-SUM(case when "LATE_AIRCRAFT_DELAY" is not null and cast("LATE_AIRCRAFT_DELAY" as numeric(20,2)) > 0 then 1 else 0 end) as "Late Aircraft Delays",
-AVG(cast(cast("LATE_AIRCRAFT_DELAY" as DECIMAL(20, 2)) * 1.00 as FLOAT)) as "Average Late Arrival Delay Performance"
+SUM(cast(a."SECURITY_DELAY" as real)) as "Security Delay Time",
+SUM(case when a."SECURITY_DELAY" is not null and cast(a."SECURITY_DELAY" as real) > 0 then 1 else 0 end) as "Security Delays",
+AVG(cast(cast(a."SECURITY_DELAY" as real) * 1.00 as FLOAT)) as "Average Security Delay Performance",
 
-from public.t_ontime_reporting_2023
-where ("CANCELLED" is null or "CANCELLED" = 0)
+SUM(cast(a."LATE_AIRCRAFT_DELAY" as real)) as "Late Aircraft Delay Time",
+SUM(case when a."LATE_AIRCRAFT_DELAY" is not null and cast(a."LATE_AIRCRAFT_DELAY" as real) > 0 then 1 else 0 end) as "Late Aircraft Delays",
+AVG(cast(cast(a."LATE_AIRCRAFT_DELAY" as real) * 1.00 as FLOAT)) as "Average Late Arrival Delay Performance"
 
-group by "OP_UNIQUE_CARRIER",
-"ORIGIN",
-"DEST"
+from public.t_ontime_reporting_2023 a
+left join carrier b
+on a."OP_UNIQUE_CARRIER" = b.unique_carrier
+left join public.t100_airport_code_lookup_2023 c
+on a."ORIGIN_AIRPORT_ID" = cast(c.code as integer) 
+left join public.t100_airport_code_lookup_2023 d
+on a."DEST_AIRPORT_ID" = cast(d.code as integer)
 
-having SUM(cast("FLIGHTS" as decimal(20, 2))) > 24
 
-order by "OP_UNIQUE_CARRIER" asc,
-"ORIGIN",
-"DEST";
+
+where (a."CANCELLED" is null or a."CANCELLED" = 0)
+
+group by b."unique_carrier_name" ,
+2
+
+having SUM(cast(a."FLIGHTS" as real)) > 24
+
+order by b."unique_carrier_name" asc,
+2;
+
+
+
+select * from public.t_ontime_reporting_2023
+where "OP_UNIQUE_CARRIER" = '9E'
+and "ORIGIN" in ('BUF', 'JFK')
+and "DEST" in ('BUF', 'JFK')
+
+select cast("code" as integer) as "code", "description"
+from public.t100_airport_code_lookup_2023
+where "code" in ('10792', '12478')
+
+select * from public.us_airfare_carrier_lookup
+where "code" = '9E'
+
+
+select unique_carrier, unique_carrier_name, count(*) as "Number of Records" 
+from public.t100_segment_all_carrier_2023
+where unique_carrier in (select distinct "OP_UNIQUE_CARRIER" from public.t_ontime_reporting_2023)
+group by unique_carrier, unique_carrier_name 
+order by unique_carrier 
+
+select * from public.t_ontime_reporting_2023
 
 
 ---- Simple Graph Bar Chart Horizontal ----
@@ -468,6 +514,9 @@ select "Unique Carrier Code", "Unique Carrier Name", "Month Number", "Month Name
 SUM(case when "Arrival Delay Classification" like 'Late %' then cast("Total Flights" as real) else 0 end) as "Total Late Flights",
 SUM(cast("Total Flights" as real)) as "Total Flights"
 from public.otp_carrier_monthly_delay_class
+
+where "Unique Carrier Name" = 'Alaska Airlines Inc.'
+
 group by "Unique Carrier Code", "Unique Carrier Name", "Month Number", "Month Name")
 
 select a.*, (a."Total Late Flights" * 1.00) / (a."Total Flights" * 1.00) as "Late Flight Percentage"

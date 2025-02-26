@@ -291,6 +291,7 @@ def select_airport_visual(selected_viz, selected_airport):
                                    color='TOTAL PASSENGERS', color_continuous_scale=['#7CC6FE', '#0B2838'])
             
             tree_figure.update_traces(texttemplate="<b>%{customdata[0]}</b><br><br>Passengers: %{customdata[1]:,.0f} <br>Departed Flights: %{customdata[2]:,.0f}<br>Destinations: %{customdata[3]:,.0f}",
+                                      hovertemplate="""<b>%{customdata[0]}</b><br><br><b>Passengers:</b> %{customdata[1]:,.0f} <br><b>Departed Flights:</b> %{customdata[2]:,.0f}<br><b>Destinations:</b> %{customdata[3]:,.0f}""",
                                       root_color='#f9f9f9', marker={'cornerradius': 5})
 
             tree_figure.update_layout(margin={'t':0, 'b':0, 'l': 0, 'r': 0}, showlegend=False)
@@ -386,6 +387,7 @@ def select_airport_visual(selected_viz, selected_airport):
                                    color='TOTAL PASSENGERS', color_continuous_scale=['#7CC6FE', '#0B2838'])
             
             tree_figure.update_traces(texttemplate="<b>%{customdata[0]}</b><br><br>Passengers: %{customdata[1]:,.0f} <br>Departed Flights: %{customdata[2]:,.0f}<br>Destinations: %{customdata[3]:,.0f}",
+                                      hovertemplate="""<b>%{customdata[0]}</b><br><br><b>Passengers:</b> %{customdata[1]:,.0f} <br><b>Departed Flights:</b> %{customdata[2]:,.0f}<br><b>Destinations:</b> %{customdata[3]:,.0f}""",
                                       root_color='#f9f9f9', marker={'cornerradius': 5})
 
             tree_figure.update_layout(margin={'t':0, 'b':0, 'l': 0, 'r': 0}, showlegend=False)
