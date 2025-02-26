@@ -139,9 +139,10 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         if selected_carrier is None or selected_carrier.strip() == '':
 
             bar_figure = px.bar(pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(), x='MONTH', y='TOTAL PASSENGERS',
-                                text_auto='.2s', title='Passengers Transported By Month: All Carriers')
+                                text_auto='.3s', title='Passengers Transported By Month: All Carriers', custom_data=['MONTH'])
 
-            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4})
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4},
+                                     hovertemplate='''<b>All Carriers</b><br><b>%{x}</b><br><br>Total Passengers: %{y:.3s}''')
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
 
@@ -161,9 +162,10 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         else:
 
             bar_figure = px.bar(pass_carrier.filter(pl.col("UNIQUE_CARRIER_NAME").eq(selected_carrier)), x='MONTH', y='TOTAL PASSENGERS',
-                                text_auto='.2s', title=f'Passengers Transported By Month: {selected_carrier}')
+                                text_auto='.3s', title=f'Passengers Transported By Month: {selected_carrier}', custom_data=['UNIQUE_CARRIER_NAME'])
 
-            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4})
+            bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4},
+                                     hovertemplate='''<b>%{customdata[0]}</b><br><b>%{x}</b><br><br>Total Passengers: %{y:.3s}''')
 
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
             

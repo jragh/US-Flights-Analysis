@@ -43,8 +43,8 @@ def passengerUtilizationCarrierTopTenRoutes(toggle_status, selected_carrier, sql
     
     select "UNIQUE_CARRIER_NAME",
     "AIRPORT_PAIR",
-    SUM(CAST("TOTAL_PASSENGERS" as real)) as "TOTAL PASSENGERS",
-    SUM(CAST("TOTAL_SEATS" as real)) as "TOTAL SEATS",
+    SUM(CAST("TOTAL_PASSENGERS" as real)) as "Total Passengers",
+    SUM(CAST("TOTAL_SEATS" as real)) as "Total Seats",
 
     (SUM(CAST("TOTAL_PASSENGERS" as double precision)) / SUM(CAST("TOTAL_SEATS" as double precision))) as "PASSENGER UTIL PCT",
 
@@ -65,16 +65,13 @@ def passengerUtilizationCarrierTopTenRoutes(toggle_status, selected_carrier, sql
 
     polars_carrier_routes = polars_carrier_routes.filter(pl.col('PASSENGER RANKING') <= 10)
 
-    polars_carrier_category_order = polars_carrier_routes.sort(pl.col('TOTAL SEATS'), descending=False).select(pl.col('AIRPORT_PAIR')).to_series().to_list()
+    polars_carrier_category_order = polars_carrier_routes.sort(pl.col('Total Seats'), descending=False).select(pl.col('AIRPORT_PAIR')).to_series().to_list()
 
     polars_barchart = px.bar(data_frame=polars_carrier_routes, x='PASSENGER UTIL PCT', y="AIRPORT_PAIR", text_auto='0.2%', orientation='h',
-                             custom_data=["TOTAL SEATS", "TOTAL PASSENGERS"])
+                             custom_data=["Total Seats", "Total Passengers"])
 
     polars_barchart.update_traces(textfont_size=10, marker={"cornerradius":4},
-                                  hovertemplate='''<b>%{y}</b><br><br>
-                                  <i>Passenger Util</i>: %{x:.2%}<br>
-                                  <i>Total Passengers</i>: %{customdata[1]:.3s}<br>
-                                  <i>Total Seats</i>: %{customdata[0]:.3s}''',
+                                  hovertemplate='''<b>%{y}</b><br><br><i>Passenger Util</i>: %{x:.2%}<br><i>Total Passengers</i>: %{customdata[1]:.3s}<br><i>Total Seats</i>: %{customdata[0]:.3s}''',
                                   showlegend=False, marker_color="#E89C31", textposition='outside', textangle=0)
 
     polars_barchart.update_yaxes(type='category', title='Airport Pair (Both Directions)', linewidth=2.5, showgrid=False, 
@@ -131,8 +128,8 @@ def passengerCountsCarrierTopTenRoutes(toggle_status, selected_carrier, sqlite_p
     
     select "UNIQUE_CARRIER_NAME",
     "AIRPORT_PAIR",
-    SUM(CAST("TOTAL_PASSENGERS" as real)) as "TOTAL PASSENGERS",
-    SUM(CAST("TOTAL_SEATS" as real)) as "TOTAL SEATS",
+    SUM(CAST("TOTAL_PASSENGERS" as real)) as "Total Passengers",
+    SUM(CAST("TOTAL_SEATS" as real)) as "Total Seats",
 
     (SUM(CAST("TOTAL_PASSENGERS" as double precision)) / SUM(CAST("TOTAL_SEATS" as double precision))) as "PASSENGER UTIL PCT",
 
@@ -153,7 +150,7 @@ def passengerCountsCarrierTopTenRoutes(toggle_status, selected_carrier, sqlite_p
 
     polars_carrier_routes = polars_carrier_routes.filter(pl.col('PASSENGER RANKING') <= 10)
 
-    polars_barchart = px.bar(polars_carrier_routes, x=["TOTAL SEATS", "TOTAL PASSENGERS"], y="AIRPORT_PAIR", orientation='h',
+    polars_barchart = px.bar(polars_carrier_routes, x=["Total Seats", "Total Passengers"], y="AIRPORT_PAIR", orientation='h',
                             barmode='overlay', text_auto='0.3s', opacity=0.75)
     
     polars_barchart.update_traces(textfont_size=10, marker={"cornerradius":4},
@@ -173,8 +170,8 @@ def passengerCountsCarrierTopTenRoutes(toggle_status, selected_carrier, sqlite_p
                               showgrid=True, zeroline=False, showline=False, 
                               showticklabels=True, tickwidth=2, gridcolor="rgba(60, 60, 60, 0.15)")
 
-    polars_barchart.update_traces(marker_color="#E89C31", selector={"name": "TOTAL SEATS"}, textposition='outside', textangle=0)
+    polars_barchart.update_traces(marker_color="#E89C31", selector={"name": "Total Seats"}, textposition='outside', textangle=0)
 
-    polars_barchart.update_traces(marker_color="#023E8A", selector={"name": "TOTAL PASSENGERS"}, textposition="inside", textangle=0)
+    polars_barchart.update_traces(marker_color="#023E8A", selector={"name": "Total Passengers"}, textposition="inside", textangle=0)
 
     return polars_barchart

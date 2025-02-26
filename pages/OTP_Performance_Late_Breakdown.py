@@ -111,11 +111,7 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
         otp_all_carriers_summary_fig.for_each_trace(lambda t: t.update(name = 'Average Arrival Delay in Mins'))
 
         otp_all_carriers_summary_fig.update_traces(textposition="bottom center", textfont={'size': 10.5}, line={'width': 3}, marker={'size': 10}, showlegend=True,
-                                            hovertemplate="""<b>All Carriers - %{x}</b><br><br>
-                                            <b>Average Arrival Delay: </b> %{y:.3} Mins<br>
-                                            <b>Total Flights: </b> %{customdata[2]:,}<br>
-                                            <b>CI 95% Upper: </b> %{customdata[0]} Mins<br>
-                                            <b>CI 95% Lower: </b> %{customdata[1]} Mins<br>""")
+                                            hovertemplate="""<b>All Carriers - %{x}</b><br><br><b>Average Arrival Delay: </b> %{y:.3} Mins<br><b>Total Flights: </b> %{customdata[2]:,}<br><b>CI 95% Upper: </b> %{customdata[0]} Mins<br><b>CI 95% Lower: </b> %{customdata[1]} Mins<br>""")
 
 
 
@@ -260,11 +256,7 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
         carrier_delay_avg_fig.for_each_trace(lambda t: t.update(name = 'Average Arrival Delay in Mins'))
 
         carrier_delay_avg_fig.update_traces(textposition="bottom center", textfont={'size': 10.5}, line={'width': 3}, marker={'size': 10}, showlegend=True,
-                                            hovertemplate="""<b>%{customdata[2]} - %{x}</b><br><br>
-                                            <b>Average Arrival Delay: </b> %{y:.3} Mins<br>
-                                            <b>Total Flights: </b> %{customdata[3]:,}<br>
-                                            <b>CI 95% Upper: </b> %{customdata[0]} Mins<br>
-                                            <b>CI 95% Lower: </b> %{customdata[1]} Mins<br>""")
+                                            hovertemplate="""<b>%{customdata[2]} - %{x}</b><br><br><b>Average Arrival Delay: </b> %{y:.3} Mins<br><b>Total Flights: </b> %{customdata[3]:,}<br><b>CI 95% Upper: </b> %{customdata[0]} Mins<br><b>CI 95% Lower: </b> %{customdata[1]} Mins<br>""")
         
 
         return_array = [
