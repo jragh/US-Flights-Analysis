@@ -22,7 +22,7 @@ dash.register_page(__name__,
                    path='/OnTimePerformance', 
                    title="US Flight Analysis - On Time Performance Analytics", 
                    description='A deeper dive of On Time Performance for American Passenger Aviation.',
-                   image="RoutesAnalysisMetaImage.png")
+                   image="AirportAnalysisMetaImage.png")
 
 sqlite_path = os.environ['POSTGRES_URI_LOCATION']
 
