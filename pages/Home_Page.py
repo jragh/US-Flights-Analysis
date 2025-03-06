@@ -3,7 +3,10 @@ import dash_bootstrap_components as dbc
 
 from .Home_Page_Pills import pills_array
 
-register_page(__name__, path='/Home')
+register_page(__name__, path='/Home',
+              title="US Flight Analysis - Home",
+              description="Welcome to the landing page of my US Flights Project! Learn about US Passenger Air Travel through this website.",
+              image="HomePageMetaImage.png")
 
 layout = html.Div([
 

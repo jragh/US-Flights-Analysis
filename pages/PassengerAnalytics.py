@@ -138,7 +138,15 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
         if selected_carrier is None or selected_carrier.strip() == '':
 
-            bar_figure = px.bar(pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(), x='MONTH', y='TOTAL PASSENGERS',
+            ## accessing the max value to hopefully fix the y axis max issue ##
+
+            pass_carrier_polar = pass_carrier.select(['MONTH', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum()
+
+            max_pass_carrier_polar = (pass_carrier_polar.select(pl.max('TOTAL PASSENGERS')).item()) * 1.10
+
+            print(max_pass_carrier_polar)
+
+            bar_figure = px.bar(pass_carrier_polar, x='MONTH', y='TOTAL PASSENGERS',
                                 text_auto='.3s', title='Passengers Transported By Month: All Carriers', custom_data=['MONTH'])
 
             bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4},
@@ -148,7 +156,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
 
             bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2,gridcolor="rgba(30, 63, 102, 0.15)")
 
-            bar_figure.update_layout(plot_bgcolor='white')
+            bar_figure.update_layout(plot_bgcolor='white', yaxis_range = [0, max_pass_carrier_polar])
 
             return_children = [
                 html.H2('All Carriers: Number of Passengers Transported', id='graph-header'),
@@ -161,7 +169,13 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
         
         else:
 
-            bar_figure = px.bar(pass_carrier.filter(pl.col("UNIQUE_CARRIER_NAME").eq(selected_carrier)), x='MONTH', y='TOTAL PASSENGERS',
+            ## accessing the max value to hopefully fix the y axis max issue ##
+
+            pass_carrier_polar = pass_carrier.filter(pl.col("UNIQUE_CARRIER_NAME").eq(selected_carrier))
+
+            max_pass_carrier_polar = (pass_carrier_polar.select(pl.col('TOTAL PASSENGERS').max()).item()) * 1.10
+
+            bar_figure = px.bar(pass_carrier_polar, x='MONTH', y='TOTAL PASSENGERS',
                                 text_auto='.3s', title=f'Passengers Transported By Month: {selected_carrier}', custom_data=['UNIQUE_CARRIER_NAME'])
 
             bar_figure.update_traces(textposition='outside', textangle=0, marker_color="#0B2838", marker={"cornerradius":4},
@@ -171,7 +185,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             
             bar_figure.update_yaxes( showgrid=True, zeroline=False, showline=False, showticklabels=True, tickwidth=2, gridcolor="rgba(30, 63, 102, 0.15)")
 
-            bar_figure.update_layout(plot_bgcolor='white')
+            bar_figure.update_layout(plot_bgcolor='white', yaxis_range = [0, max_pass_carrier_polar])
 
             return_children = [
                 html.H2(f'{selected_carrier}: Number of Passengers Transported', id='graph-header'),
