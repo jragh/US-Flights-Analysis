@@ -215,8 +215,13 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                                                      left join MONTHS_LOOKUP b 
                                                      on a.MONTH = b.MONTH_NAME_SHORT::text 
                                                      order by CAST(b.MONTH as numeric) asc""", uri=sqlite_path,engine='adbc')
+            
+            pass_util_carrier_polar = pass_util_carrier.select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum()
 
-            bar_figure = px.bar(pass_util_carrier.select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']).group_by(pl.col('MONTH')).sum(),
+            ## (pass_carrier_polar.select(pl.col('TOTAL PASSENGERS').max()).item()) * 1.10
+            max_pass_util_carrier_polar = (pass_util_carrier_polar.select(pl.col('TOTAL SEATS').max()).item()) * 1.10
+
+            bar_figure = px.bar(pass_util_carrier_polar,
                                 x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title='Passenger Seat Utilization: All Carriers',
                                 barmode='group', text_auto='.3s')
             
@@ -240,7 +245,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure.update_layout(plot_bgcolor='white')
 
             ## Adding in Horizontal Legend
-            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None)
+            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None, yaxis_range=[0, max_pass_util_carrier_polar])
 
             ## Set Bar Colors ##
             bar_figure.update_traces(marker_color="#023E8A", selector={"name": "TOTAL SEATS"}, marker={"cornerradius":4})
@@ -270,8 +275,13 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
                                                      from T100_PASSENGER_UTILIZATION_BY_CARRIER_2023 a 
                                                      left join MONTHS_LOOKUP b on a.MONTH = b.MONTH_NAME_SHORT 
                                                      order by CAST(b.MONTH as int) asc""", uri=sqlite_path,engine='adbc')
+            
+            pass_util_carrier_polar = pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS'])
 
-            bar_figure = px.bar(pass_util_carrier.filter(pl.col('UNIQUE_CARRIER_NAME') == selected_carrier).select(['MONTH', 'TOTAL SEATS', 'TOTAL PASSENGERS']),
+            ## (pass_carrier_polar.select(pl.col('TOTAL PASSENGERS').max()).item()) * 1.10
+            max_pass_util_carrier_polar = (pass_util_carrier_polar.select(pl.col('TOTAL SEATS').max()).item()) * 1.10
+
+            bar_figure = px.bar(pass_util_carrier_polar,
                                 x='MONTH', y=['TOTAL SEATS', 'TOTAL PASSENGERS'], title=f'Passenger Seat Utilization Pct: {selected_carrier}',
                                 barmode='group', text_auto='.3s')
             
@@ -295,7 +305,7 @@ def passengers_carrier_selection(selected_carrier, selected_pass_viz):
             bar_figure.update_xaxes(categoryorder='array', categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(204, 204, 204)')
 
             ## Adding in Horizontal Legend
-            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None)
+            bar_figure.update_layout(plot_bgcolor='white', legend_title=None, legend=dict(orientation="h", xanchor="center", x=0.5, yanchor='bottom', y=-0.32), hovermode="x unified", xaxis_title=None, yaxis_range=[0, max_pass_util_carrier_polar])
 
             ## Set Bar Colors ##
             bar_figure.update_traces(marker_color="#023E8A", selector={"name": "TOTAL SEATS"}, marker={"cornerradius":4})

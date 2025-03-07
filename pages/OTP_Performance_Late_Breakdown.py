@@ -79,6 +79,12 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
 
         )
 
+        max_otp_all_carriers_summary_2 = (otp_all_carriers_summary_2.select(pl.col("Average Delay Float").max()).item()) * 1.10
+
+        min_otp_all_carriers_summary_2 =  (otp_all_carriers_summary_2.select(pl.col("Average Delay Float").min()).item()) - 5
+
+        print([min_otp_all_carriers_summary_2, max_otp_all_carriers_summary_2])
+
         otp_all_carriers_summary_fig = px.line(otp_all_carriers_summary_2, 
                                             x="Month Name", 
                                             y="Average Delay Float", 
@@ -104,7 +110,8 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
             yaxis_tickfont={'size': 10},
             margin={'l':10, 'r': 10, 't': 10, 'b': 10},
             plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
-            hovermode='closest')
+            hovermode='closest',
+            yaxis_range=[min_otp_all_carriers_summary_2, max_otp_all_carriers_summary_2])
             
         otp_all_carriers_summary_fig.update_xaxes(categoryarray=months_text, linewidth=2.5, showgrid=False, linecolor='rgb(180, 180, 180)')
 
@@ -222,6 +229,10 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
 
         )
 
+        max_carrier_delay_avg = (carrier_delay_avg.select(pl.col("Average Delay Float").max()).item()) * 1.10
+
+        min_carrier_delay_avg = (carrier_delay_avg.select(pl.col("Average Delay Float").min()).item()) - 5
+
         carrier_delay_avg_fig = px.line(carrier_delay_avg, 
                                         x="Month Name", 
                                         y="Average Delay Float", 
@@ -248,7 +259,8 @@ def otpPerformanceLateBreakdown(selected_carrier, sqlite_path, selected_viz):
                 
             margin={'l':10, 'r': 10, 't': 10, 'b': 10},
             plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
-            hovermode='closest')
+            hovermode='closest',
+            yaxis_range=[min_carrier_delay_avg, max_carrier_delay_avg])
         
 
         carrier_delay_avg_fig.update_xaxes(categoryarray=months_text, linewidth=1.5, showgrid=False, linecolor='rgb(180, 180, 180)')

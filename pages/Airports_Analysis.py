@@ -13,7 +13,7 @@ from .Generate_Top_Airports import generateAirportsTopTen
 
 dash.register_page(__name__, 
                    path='/AirportAnalytics',
-                   title="US Flight Analysis - Route Analytics",
+                   title="US Flight Analysis - Airport Analytics",
                    description="Explore data and stats about Airports across the United States.",
                    image="AirportAnalysisMetaImage.png")
 
