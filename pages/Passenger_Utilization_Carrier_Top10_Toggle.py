@@ -79,7 +79,8 @@ def passengerUtilizationCarrierTopTenRoutes(toggle_status, selected_carrier, sql
     
     polars_barchart.update_layout(margin={'l':10, 'r': 10, 't': 10, 'b': 8},
                                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
-                               legend={'font': {'size': 10}, 'orientation':'h'})
+                               legend={'font': {'size': 10}, 'orientation':'h'},
+                               xaxis_tickformat='.0%', xaxis_range=[0, 1.10])
     
     polars_barchart.update_xaxes(title='Passenger Utilization (%)',
                               showgrid=True, zeroline=False, showline=False, 
@@ -150,6 +151,8 @@ def passengerCountsCarrierTopTenRoutes(toggle_status, selected_carrier, sqlite_p
 
     polars_carrier_routes = polars_carrier_routes.filter(pl.col('PASSENGER RANKING') <= 10)
 
+    max_polars_carrier_routes = (polars_carrier_routes.select(pl.col("Total Seats").max()).item()) * 1.10
+
     polars_barchart = px.bar(polars_carrier_routes, x=["Total Seats", "Total Passengers"], y="AIRPORT_PAIR", orientation='h',
                             barmode='overlay', text_auto='0.3s', opacity=0.75)
     
@@ -159,7 +162,8 @@ def passengerCountsCarrierTopTenRoutes(toggle_status, selected_carrier, sqlite_p
     polars_barchart.update_layout(yaxis={'tickfont': {'size': 10}, 'categoryorder': 'total ascending'}, 
                                   margin={'l':10, 'r': 10, 't': 10, 'b': 8},
                                plot_bgcolor='#f9f9f9', paper_bgcolor="#f9f9f9",
-                               legend={'font': {'size': 10}, 'orientation':'h'})
+                               legend={'font': {'size': 10}, 'orientation':'h'},
+                               xaxis_range=[0, max_polars_carrier_routes])
     
     polars_barchart.update_legends(yanchor="bottom", y=1.02, xanchor= 'right', x= 0.5, title=None)
 
